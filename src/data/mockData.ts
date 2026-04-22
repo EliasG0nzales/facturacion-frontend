@@ -103,6 +103,7 @@ export function updateProduct(updated: Product) {
 }
 
 export const categories = [
+  'Todos los Productos',
   'Monitores',
   'Case',
   'PC Completa',

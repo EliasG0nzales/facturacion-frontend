@@ -124,22 +124,51 @@ export default function ProductosView() {
 
           {/* Col 1: imágenes */}
           <div className="pv-col-img">
-            <p className="pv-col-label">PORTADA</p>
+            {/* Portada principal grande */}
+            <p className="pv-col-label">IMAGEN PRINCIPAL</p>
             <div className="pv-cover" onClick={() => coverRef.current?.click()}>
               {form.cover
                 ? <img src={form.cover} alt="portada" className="pv-img-fill" />
-                : <span className="pv-upload">↓</span>}
+                : (
+                  <div className="pv-cover-placeholder">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="#ccc" strokeWidth="1.5" width="52" height="52">
+                      <rect x="4" y="8" width="40" height="32" rx="4"/>
+                      <circle cx="16" cy="20" r="4"/>
+                      <path d="M4 34 l10-10 8 8 6-6 16 12"/>
+                    </svg>
+                    <span className="pv-cover-hint">Subir imagen principal</span>
+                  </div>
+                )}
               <input ref={coverRef} type="file" accept="image/*" hidden onChange={handleCover} />
+              {form.cover && (
+                <div className="pv-cover-overlay">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" width="20" height="20">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>Cambiar</span>
+                </div>
+              )}
             </div>
 
-            <p className="pv-col-label" style={{ marginTop: '0.75rem' }}>GALERÍA</p>
+            {/* Galería 4 miniaturas en fila */}
+            <p className="pv-col-label" style={{ marginTop: '0.75rem' }}>IMÁGENES SECUNDARIAS</p>
             <div className="pv-gallery">
               {[0, 1, 2, 3].map(idx => (
                 <div key={idx} className="pv-gal-cell"
                   onClick={() => (document.getElementById(`pgal-${idx}`) as HTMLInputElement)?.click()}>
                   {form.gallery[idx]
                     ? <img src={form.gallery[idx]} alt="" className="pv-img-fill" />
-                    : <span className="pv-upload" style={{ fontSize: '0.85rem' }}>↓</span>}
+                    : (
+                      <div className="pv-gal-placeholder">
+                        <svg viewBox="0 0 48 48" fill="none" stroke="#ccc" strokeWidth="1.5" width="28" height="28">
+                          <rect x="4" y="8" width="40" height="32" rx="4"/>
+                          <circle cx="16" cy="20" r="4"/>
+                          <path d="M4 34 l10-10 8 8 6-6 16 12"/>
+                        </svg>
+                        <span style={{ fontSize: '0.65rem', color: '#ccc', marginTop: '4px' }}>{idx + 1}</span>
+                      </div>
+                    )}
                   <input id={`pgal-${idx}`} type="file" accept="image/*" hidden
                     onChange={e => handleGallery(e, idx)} />
                 </div>
@@ -188,10 +217,6 @@ export default function ProductosView() {
             <p className="pv-field-lbl">CÓDIGO DEL PRODUCTO</p>
             <input className="pv-input" placeholder="Código del producto"
               value={form.code} onChange={e => set('code', e.target.value)} />
-
-            <p className="pv-field-lbl">COSTO</p>
-            <input className="pv-input" type="number" min="0" placeholder="Costo"
-              value={form.cost || ''} onChange={e => set('cost', Number(e.target.value))} />
           </div>
 
           {/* Col 3: stock + guardar */}
