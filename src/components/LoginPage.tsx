@@ -63,7 +63,6 @@ export default function LoginPage({ onLogin, onGoRegister, onGoRecover }: Props)
           <span className="auth-divider">·</span>
           <button className="link-btn" onClick={onGoRegister}>Crear cuenta</button>
         </div>
-        <p className="auth-hint">Demo: user@demo.com / 123456</p>
       </div>
     </div>
   )

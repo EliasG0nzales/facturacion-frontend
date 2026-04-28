@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { mockClients, addClient } from '../../data/mockData'
 import type { Client } from '../../types'
 
+// Lista en memoria — sin datos mock ni localStorage
+// TODO: conectar con API cuando el backend esté listo
+
 export default function ClientesView() {
+  const [clients, setClients] = useState<Client[]>([])
   const [search, setSearch] = useState('')
-  const [clients, setClients] = useState<Client[]>(mockClients)
   const [showModal, setShowModal] = useState(false)
   const [newName, setNewName] = useState('')
   const [newEmail, setNewEmail] = useState('')
@@ -21,7 +23,7 @@ export default function ClientesView() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault()
     const newClient: Client = {
-      id: String(clients.length + 1).padStart(7, '0'),
+      id: String(Date.now()),
       name: newName,
       email: newEmail,
       purchases: 0,
@@ -30,8 +32,7 @@ export default function ClientesView() {
       registeredAt: new Date().toISOString().split('T')[0],
       frequency: 'Ocasional',
     }
-    addClient(newClient)
-    setClients([...mockClients])
+    setClients(prev => [...prev, newClient])
     setNewName('')
     setNewEmail('')
     setShowModal(false)
@@ -39,12 +40,10 @@ export default function ClientesView() {
 
   return (
     <div className="view-container">
-      {/* Header */}
       <div className="view-header">
         <h2 className="view-title">Clientes</h2>
       </div>
 
-      {/* Toolbar */}
       <div className="clientes-toolbar">
         <div className="clientes-search-wrap">
           <span className="search-icon">🔍</span>
@@ -59,9 +58,7 @@ export default function ClientesView() {
         <button className="btn-add-client" onClick={() => setShowModal(true)}>+ Cliente</button>
       </div>
 
-      {/* Body */}
       <div className="clientes-body">
-        {/* Lista */}
         <div className="clientes-list-wrap">
           <p className="clientes-total">{filtered.length} EN TOTAL</p>
           <div className="clientes-list">
@@ -88,12 +85,11 @@ export default function ClientesView() {
               </div>
             ))}
             {filtered.length === 0 && (
-              <p className="empty-state">No se encontraron clientes.</p>
+              <p className="empty-state">No hay clientes registrados aún.</p>
             )}
           </div>
         </div>
 
-        {/* Panel lateral */}
         <aside className="clientes-sidebar">
           <h3 className="top-clients-title">CLIENTES MÁS ACTIVOS</h3>
           <div className="top-clients-divider" />
@@ -117,7 +113,6 @@ export default function ClientesView() {
         </aside>
       </div>
 
-      {/* Modal nuevo cliente */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { mockUsers, addUser, addClient } from '../data/mockData'
-import type { User, Client } from '../types'
+import { mockUsers, addUser } from '../data/mockData'
+import type { User } from '../types'
 
 interface Props {
   onGoLogin: () => void
@@ -24,22 +24,9 @@ export default function RegisterPage({ onGoLogin, onRegistered }: Props) {
       setError('Este correo ya está registrado.')
       return
     }
-    const newId = String(mockUsers.length + 1).padStart(7, '0')
+    const newId = String(Date.now())
     const newUser: User = { id: newId, name, email, password }
     addUser(newUser)
-
-    const newClient: Client = {
-      id: newId,
-      name,
-      email,
-      purchases: 0,
-      totalSpent: 0,
-      lastActivity: new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' }),
-      registeredAt: new Date().toISOString().split('T')[0],
-      frequency: 'Ocasional',
-    }
-    addClient(newClient)
-
     onRegistered(newUser)
   }
 
