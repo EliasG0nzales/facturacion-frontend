@@ -11,9 +11,8 @@ export default function ProductCard({ product, onAddToCart }: Props) {
       <div className="product-image" aria-hidden="true" />
       <div className="product-info">
         <p className="product-name">{product.name.toUpperCase()}</p>
-        <p className="product-stock"># STOCK: {product.stock}</p>
-        <p className="product-sold">#VENDIDOS: {product.sold}</p>
-        <p className="product-category">{product.category.toUpperCase()}</p>
+        <p className="product-stock"># STOCK: {product.stockCurrent}</p>
+        <p className="product-category">{product.category?.name?.toUpperCase() || 'SIN CATEGORÍA'}</p>
       </div>
     </div>
   )

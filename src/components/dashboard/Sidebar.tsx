@@ -1,4 +1,5 @@
-import type { DashboardView, User } from '../../types'
+import type { DashboardView } from '../../types'
+import type { User } from '../../types'
 
 interface Props {
   user: User
@@ -17,8 +18,9 @@ export default function Sidebar({ user, activeView, onChangeView, onLogout }: Pr
   return (
     <aside className="sidebar">
       <div className="sidebar-user">
-        <div className="sidebar-avatar">{user.name.charAt(0)}</div>
-        <p className="sidebar-username">{user.name}</p>
+        {/* username en vez de name */}
+        <div className="sidebar-avatar">{user.username.charAt(0).toUpperCase()}</div>
+        <p className="sidebar-username">{user.username}</p>
         <p className="sidebar-welcome">Welcome back</p>
       </div>
 
@@ -38,7 +40,9 @@ export default function Sidebar({ user, activeView, onChangeView, onLogout }: Pr
       <div className="sidebar-footer">
         <button className="sidebar-footer-link">help</button>
         <button className="sidebar-footer-link">settings</button>
-        <button className="sidebar-footer-link logout" onClick={onLogout}>log out</button>
+        <button className="sidebar-footer-link logout" onClick={onLogout}>
+          log out
+        </button>
       </div>
     </aside>
   )

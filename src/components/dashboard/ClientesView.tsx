@@ -1,47 +1,48 @@
 import { useState } from 'react'
-import type { Client } from '../../types'
-
-// Lista en memoria — sin datos mock ni localStorage
-// TODO: conectar con API cuando el backend esté listo
+import { useCustomers } from '../../hooks/useCustomers'
+import type { CreateCustomerPayload } from '../../types'
 
 export default function ClientesView() {
-  const [clients, setClients] = useState<Client[]>([])
+  const { customers, meta, loading, error, create, remove } = useCustomers()
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [newName, setNewName] = useState('')
+  const [newNombre, setNewNombre] = useState('')
   const [newEmail, setNewEmail] = useState('')
+  const [saving, setSaving] = useState(false)
 
-  const filtered = clients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = customers.filter(c =>
+    c.nombre.toLowerCase().includes(search.toLowerCase())
   )
 
-  const topClients = [...clients]
-    .filter(c => c.purchases > 0)
-    .sort((a, b) => b.totalSpent - a.totalSpent)
-    .slice(0, 3)
-
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newClient: Client = {
-      id: String(Date.now()),
-      name: newName,
-      email: newEmail,
-      purchases: 0,
-      totalSpent: 0,
-      lastActivity: new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' }),
-      registeredAt: new Date().toISOString().split('T')[0],
-      frequency: 'Ocasional',
+    setSaving(true)
+    const payload: CreateCustomerPayload = {
+      nombre: newNombre,
+      email: newEmail || undefined,
+      tipoDocumento: 'SIN_DOC',
     }
-    setClients(prev => [...prev, newClient])
-    setNewName('')
-    setNewEmail('')
-    setShowModal(false)
+    const result = await create(payload)
+    setSaving(false)
+    if (result) {
+      setNewNombre('')
+      setNewEmail('')
+      setShowModal(false)
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Desactivar este cliente?')) return
+    await remove(id)
   }
 
   return (
     <div className="view-container">
       <div className="view-header">
         <h2 className="view-title">Clientes</h2>
+        {meta && (
+          <span className="view-count">{meta.total} clientes</span>
+        )}
       </div>
 
       <div className="clientes-toolbar">
@@ -55,61 +56,92 @@ export default function ClientesView() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <button className="btn-add-client" onClick={() => setShowModal(true)}>+ Cliente</button>
+        <button className="btn-add-client" onClick={() => setShowModal(true)}>
+          + Cliente
+        </button>
       </div>
 
       <div className="clientes-body">
         <div className="clientes-list-wrap">
-          <p className="clientes-total">{filtered.length} EN TOTAL</p>
-          <div className="clientes-list">
-            {filtered.map(c => (
-              <div key={c.id} className="cliente-row">
-                <div className="cliente-avatar">
-                  <span className="avatar-icon">🤖</span>
-                </div>
-                <div className="cliente-info">
-                  <p className="cliente-label">NOMBRE DE USUARIO</p>
-                  <p className="cliente-name">{c.name}</p>
-                </div>
-                <div className="cliente-info">
-                  <p className="cliente-label">HISTORIAL DE COMPRAS</p>
-                  <p className="cliente-value">
-                    {c.purchases} pedidos /<br />
-                    S/. {c.totalSpent.toLocaleString('es-PE')}.00
-                  </p>
-                </div>
-                <div className="cliente-info">
-                  <p className="cliente-label">ÚLTIMA FECHA DE ACTIVIDAD</p>
-                  <p className="cliente-value">{c.lastActivity}</p>
-                </div>
+          {loading && (
+            <p className="empty-state">Cargando clientes...</p>
+          )}
+          {error && (
+            <p className="auth-error" style={{ margin: '1rem' }}>{error}</p>
+          )}
+          {!loading && (
+            <>
+              <p className="clientes-total">{filtered.length} EN TOTAL</p>
+              <div className="clientes-list">
+                {filtered.map(c => (
+                  <div key={c.id} className="cliente-row">
+                    <div className="cliente-avatar">
+                      <span className="avatar-icon">🤖</span>
+                    </div>
+                    <div className="cliente-info">
+                      <p className="cliente-label">NOMBRE</p>
+                      <p className="cliente-name">{c.nombre}</p>
+                    </div>
+                    <div className="cliente-info">
+                      <p className="cliente-label">DOCUMENTO</p>
+                      <p className="cliente-value">
+                        {c.tipoDocumento}{c.nroDocumento ? ` · ${c.nroDocumento}` : ''}
+                      </p>
+                    </div>
+                    <div className="cliente-info">
+                      <p className="cliente-label">CONTACTO</p>
+                      <p className="cliente-value">
+                        {c.email ?? '—'}<br />
+                        {c.telefono ?? ''}
+                      </p>
+                    </div>
+                    <div className="cliente-info">
+                      <p className="cliente-label">ESTADO</p>
+                      <p className="cliente-value">
+                        {c.isActive ? '✓ Activo' : '✗ Inactivo'}
+                      </p>
+                    </div>
+                    <button
+                      className="prod-del-btn"
+                      onClick={() => handleDelete(c.id)}
+                      title="Desactivar"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                ))}
+                {filtered.length === 0 && !loading && (
+                  <p className="empty-state">No se encontraron clientes.</p>
+                )}
               </div>
-            ))}
-            {filtered.length === 0 && (
-              <p className="empty-state">No hay clientes registrados aún.</p>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
+        {/* Panel lateral — top 3 por orden alfabético mientras no hay totalSpent */}
         <aside className="clientes-sidebar">
-          <h3 className="top-clients-title">CLIENTES MÁS ACTIVOS</h3>
+          <h3 className="top-clients-title">CLIENTES RECIENTES</h3>
           <div className="top-clients-divider" />
-          {topClients.length === 0 && (
-            <p className="empty-state" style={{ fontSize: '0.8rem' }}>Sin actividad aún.</p>
-          )}
-          {topClients.map(c => (
+          {customers.slice(0, 3).map(c => (
             <div key={c.id} className="top-client-card">
-              <div className="top-client-avatar" />
               <div>
-                <p className="top-client-name">{c.name}</p>
-                <p className="top-client-badge">{c.badge ?? 'Cliente'}</p>
+                <div className="top-client-avatar" />
+                <div>
+                  <p className="top-client-name">{c.nombre}</p>
+                  <p className="top-client-badge">{c.tipoDocumento}</p>
+                </div>
               </div>
               <div className="top-client-details">
-                <p>Total acumulado: S/. {c.totalSpent.toLocaleString('es-PE')}.00</p>
-                <p>Frecuencia: {c.frequency}</p>
+                <p>{c.email ?? 'Sin correo'}</p>
+                <p>{c.telefono ?? 'Sin teléfono'}</p>
               </div>
-              <button className="top-client-link">Ver Actividad →</button>
             </div>
           ))}
+          {customers.length === 0 && !loading && (
+            <p className="empty-state" style={{ fontSize: '0.8rem' }}>
+              Sin clientes aún.
+            </p>
+          )}
         </aside>
       </div>
 
@@ -122,16 +154,28 @@ export default function ClientesView() {
             </div>
             <form onSubmit={handleAdd} className="auth-form" style={{ marginTop: '0.5rem' }}>
               <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" placeholder="Nombre completo" value={newName}
-                  onChange={e => setNewName(e.target.value)} required />
+                <label>Nombre completo</label>
+                <input
+                  type="text"
+                  placeholder="Nombre o razón social"
+                  value={newNombre}
+                  onChange={e => setNewNombre(e.target.value)}
+                  required
+                />
               </div>
               <div className="form-group">
-                <label>Correo</label>
-                <input type="email" placeholder="correo@ejemplo.com" value={newEmail}
-                  onChange={e => setNewEmail(e.target.value)} required />
+                <label>Correo (opcional)</label>
+                <input
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
+                />
               </div>
-              <button type="submit" className="btn-primary">Agregar cliente</button>
+              {error && <p className="auth-error">{error}</p>}
+              <button type="submit" className="btn-primary" disabled={saving}>
+                {saving ? 'Guardando...' : 'Agregar cliente'}
+              </button>
             </form>
           </div>
         </div>

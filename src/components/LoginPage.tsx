@@ -1,25 +1,23 @@
 import { useState } from 'react'
-import type { User } from '../types'
-import { mockUsers } from '../data/mockData'
+import { useAuth } from '../context/AuthContext'
 
-interface Props {
-  onLogin: (user: User) => void
-  onGoRegister: () => void
-  onGoRecover: () => void
-}
-
-export default function LoginPage({ onLogin, onGoRegister, onGoRecover }: Props) {
+export default function LoginPage() {
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const user = mockUsers.find(u => u.email === email && u.password === password)
-    if (user) {
-      onLogin(user)
-    } else {
-      setError('Correo o contraseña incorrectos.')
+    setError('')
+    setLoading(true)
+    try {
+      await login({ email, password })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Credenciales incorrectas')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -42,6 +40,7 @@ export default function LoginPage({ onLogin, onGoRegister, onGoRecover }: Props)
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           <div className="form-group">
@@ -53,16 +52,14 @@ export default function LoginPage({ onLogin, onGoRegister, onGoRecover }: Props)
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
           {error && <p className="auth-error">{error}</p>}
-          <button type="submit" className="btn-primary">Entrar</button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
         </form>
-        <div className="auth-links">
-          <button className="link-btn" onClick={onGoRecover}>¿Olvidaste tu contraseña?</button>
-          <span className="auth-divider">·</span>
-          <button className="link-btn" onClick={onGoRegister}>Crear cuenta</button>
-        </div>
       </div>
     </div>
   )

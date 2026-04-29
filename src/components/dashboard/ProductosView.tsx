@@ -1,33 +1,39 @@
 import { useState, useRef } from 'react'
-import { mockProducts, addProduct, updateProduct, categories } from '../../data/mockData'
-import type { Product } from '../../types'
+import { useProducts } from '../../hooks/useProducts'
+import type { Product, CreateProductPayload, UpdateProductPayload } from '../../types'
 
-const LABELS = ['Sin etiqueta', 'Nuevo', 'Oferta', 'Destacado', 'Agotado']
-
-const emptyForm = (): Omit<Product, 'id' | 'sold'> => ({
-  name: '', brand: '', model: '', price: 0, cost: 0, code: '',
-  description: '', stock: 0, minStock: 5, category: 'Monitores',
-  label: 'Sin etiqueta', featured: false, cover: '', gallery: [],
+const emptyForm = (): CreateProductPayload => ({
+  sku: '',
+  name: '',
+  description: '',
+  price: 0,
+  cost: 0,
+  stockCurrent: 0,
+  stockMin: 5,
+  categoryId: undefined,
+  coverImageUrl: '',
+  gallery: [],
+  tags: [],
+  isFeatured: false,
+  isActive: true,
 })
 
 export default function ProductosView() {
-  const [products, setProducts] = useState<Product[]>([...mockProducts])
+  const { products, categories, loading, error, create, update, remove, fetchProducts } = useProducts({ isActive: true })
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState(emptyForm())
   const [search, setSearch] = useState('')
   const [saved, setSaved] = useState(false)
   const coverRef = useRef<HTMLInputElement>(null)
 
-  const refresh = () => setProducts([...mockProducts])
-
-  const set = (k: keyof typeof form, v: unknown) =>
+  const set = (k: keyof CreateProductPayload, v: unknown) =>
     setForm(f => ({ ...f, [k]: v }))
 
   const handleCover = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = ev => set('cover', ev.target?.result as string)
+    reader.onload = ev => set('coverImageUrl', ev.target?.result as string)
     reader.readAsDataURL(file)
   }
 
@@ -36,54 +42,71 @@ export default function ProductosView() {
     if (!file) return
     const reader = new FileReader()
     reader.onload = ev => {
-      const updated = [...form.gallery]
+      const updated = [...(form.gallery ?? [])]
       updated[idx] = ev.target?.result as string
       set('gallery', updated)
     }
     reader.readAsDataURL(file)
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (editing) {
-      updateProduct({ ...editing, ...form })
-    } else {
-      addProduct({ ...form, id: String(Date.now()), sold: 0 })
+    try {
+      if (editing) {
+        await update(editing.id, form as UpdateProductPayload)
+      } else {
+        await create(form as CreateProductPayload)
+      }
+      setEditing(null)
+      setForm(emptyForm())
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (err) {
+      console.error('Error al guardar:', err)
     }
-    refresh()
-    setEditing(null)
-    setForm(emptyForm())
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
   }
 
   const loadEdit = (p: Product) => {
     setEditing(p)
     setForm({
-      name: p.name, brand: p.brand, model: p.model, price: p.price,
-      cost: p.cost, code: p.code, description: p.description, stock: p.stock,
-      minStock: p.minStock, category: p.category, label: p.label,
-      featured: p.featured, cover: p.cover ?? '', gallery: [...p.gallery],
+      sku: p.sku ?? '',
+      name: p.name,
+      description: p.description ?? '',
+      price: p.price,
+      cost: p.cost ?? 0,
+      stockCurrent: p.stockCurrent,
+      stockMin: p.stockMin,
+      categoryId: p.categoryId ?? undefined,
+      coverImageUrl: p.coverImageUrl ?? '',
+      gallery: p.gallery ?? [],
+      tags: p.tags ?? [],
+      isFeatured: p.isFeatured,
+      isActive: p.isActive,
     })
     // scroll al top del formulario
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = (id: string) => {
-    const idx = mockProducts.findIndex(p => p.id === id)
-    if (idx !== -1) mockProducts.splice(idx, 1)
-    if (editing?.id === id) { setEditing(null); setForm(emptyForm()) }
-    refresh()
+  const handleDelete = async (id: number) => {
+    try {
+      await remove(id)
+      if (editing?.id === id) {
+        setEditing(null)
+        setForm(emptyForm())
+      }
+    } catch (err) {
+      console.error('Error al eliminar:', err)
+    }
   }
 
   const filtered = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.code.toLowerCase().includes(search.toLowerCase())
+    (p.sku?.toLowerCase().includes(search.toLowerCase()) ?? false)
   )
 
   const stockStatus = (p: Product) => {
-    if (p.stock === 0) return { label: 'Sin stock', cls: 'badge-nostock' }
-    if (p.stock <= p.minStock) return { label: 'Stock bajo', cls: 'badge-low' }
+    if (p.stockCurrent === 0) return { label: 'Sin stock', cls: 'badge-nostock' }
+    if (p.stockCurrent <= p.stockMin) return { label: 'Stock bajo', cls: 'badge-low' }
     return { label: 'En stock', cls: 'badge-instock' }
   }
 
@@ -101,17 +124,6 @@ export default function ProductosView() {
         {/* Topbar */}
         <div className="pv-topbar">
           <span className="pv-hint">Registre sus productos...</span>
-          <label className="prod-featured-check">
-            <input type="checkbox" checked={form.featured}
-              onChange={e => set('featured', e.target.checked)} />
-            <span>⭐ Destacar un producto</span>
-          </label>
-          <div className="prod-label-select">
-            <span>Etiqueta:</span>
-            <select value={form.label} onChange={e => set('label', e.target.value)}>
-              {LABELS.map(l => <option key={l}>{l}</option>)}
-            </select>
-          </div>
           {editing && (
             <button className="pv-clear-btn" onClick={() => { setEditing(null); setForm(emptyForm()) }}>
               ✕ Cancelar edición
@@ -127,8 +139,8 @@ export default function ProductosView() {
             {/* Portada principal grande */}
             <p className="pv-col-label">IMAGEN PRINCIPAL</p>
             <div className="pv-cover" onClick={() => coverRef.current?.click()}>
-              {form.cover
-                ? <img src={form.cover} alt="portada" className="pv-img-fill" />
+              {form.coverImageUrl
+                ? <img src={form.coverImageUrl} alt="portada" className="pv-img-fill" />
                 : (
                   <div className="pv-cover-placeholder">
                     <svg viewBox="0 0 48 48" fill="none" stroke="#ccc" strokeWidth="1.5" width="52" height="52">
@@ -140,7 +152,7 @@ export default function ProductosView() {
                   </div>
                 )}
               <input ref={coverRef} type="file" accept="image/*" hidden onChange={handleCover} />
-              {form.cover && (
+              {form.coverImageUrl && (
                 <div className="pv-cover-overlay">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" width="20" height="20">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -157,7 +169,7 @@ export default function ProductosView() {
               {[0, 1, 2, 3].map(idx => (
                 <div key={idx} className="pv-gal-cell"
                   onClick={() => (document.getElementById(`pgal-${idx}`) as HTMLInputElement)?.click()}>
-                  {form.gallery[idx]
+                  {form.gallery?.[idx]
                     ? <img src={form.gallery[idx]} alt="" className="pv-img-fill" />
                     : (
                       <div className="pv-gal-placeholder">
@@ -184,14 +196,17 @@ export default function ProductosView() {
 
             <div className="pv-row2">
               <div>
-                <p className="pv-field-lbl">MARCA</p>
-                <input className="pv-input" placeholder="Marca"
-                  value={form.brand} onChange={e => set('brand', e.target.value)} />
+            <p className="pv-field-lbl">Codigo de serie</p>
+            <input className="pv-input" placeholder="SKU"
+              value={form.sku ?? ''} onChange={e => set('sku', e.target.value)} />
               </div>
               <div>
-                <p className="pv-field-lbl">MODELO</p>
-                <input className="pv-input" placeholder="Modelo"
-                  value={form.model} onChange={e => set('model', e.target.value)} />
+                <p className="pv-field-lbl">CATEGORÍA</p>
+                <select className="pv-input pv-select" value={form.categoryId ?? ''}
+                  onChange={e => set('categoryId', e.target.value ? Number(e.target.value) : undefined)}>
+                  <option value="">Seleccionar categoría</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
               </div>
             </div>
 
@@ -202,11 +217,9 @@ export default function ProductosView() {
                   value={form.price || ''} onChange={e => set('price', Number(e.target.value))} />
               </div>
               <div>
-                <p className="pv-field-lbl">CATEGORÍA</p>
-                <select className="pv-input pv-select" value={form.category}
-                  onChange={e => set('category', e.target.value)}>
-                  {categories.map(c => <option key={c}>{c}</option>)}
-                </select>
+                <p className="pv-field-lbl">COSTO</p>
+                <input className="pv-input" type="number" min="0" placeholder="Costo"
+                  value={form.cost ?? ''} onChange={e => set('cost', Number(e.target.value))} />
               </div>
             </div>
 
@@ -214,9 +227,11 @@ export default function ProductosView() {
             <textarea className="pv-input pv-textarea" placeholder="Descripción"
               value={form.description} onChange={e => set('description', e.target.value)} />
 
-            <p className="pv-field-lbl">CÓDIGO DEL PRODUCTO</p>
-            <input className="pv-input" placeholder="Código del producto"
-              value={form.code} onChange={e => set('code', e.target.value)} />
+            <label className="prod-featured-check">
+              <input type="checkbox" checked={form.isFeatured}
+                onChange={e => set('isFeatured', e.target.checked)} />
+              <span>⭐ Destacar este producto</span>
+            </label>
           </div>
 
           {/* Col 3: stock + guardar */}
@@ -225,11 +240,11 @@ export default function ProductosView() {
 
             <p className="pv-field-lbl">STOCK ACTUAL</p>
             <input className="pv-input" type="number" min="0" placeholder="Stock actual"
-              value={form.stock || ''} onChange={e => set('stock', Number(e.target.value))} />
+              value={form.stockCurrent || ''} onChange={e => set('stockCurrent', Number(e.target.value))} />
 
             <p className="pv-field-lbl" style={{ marginTop: '0.75rem' }}>STOCK MÍNIMO</p>
             <input className="pv-input" type="number" min="0" placeholder="Stock mínimo"
-              value={form.minStock || ''} onChange={e => set('minStock', Number(e.target.value))} />
+              value={form.stockMin || ''} onChange={e => set('stockMin', Number(e.target.value))} />
 
             <div style={{ flex: 1 }} />
 
@@ -246,18 +261,17 @@ export default function ProductosView() {
       <div className="pv-table-section">
         <div className="pv-table-topbar">
           <span className="pv-table-count">Todos los productos ({filtered.length})</span>
-          <input className="pv-search" type="text" placeholder="Buscar por nombre o código..."
+          <input className="pv-search" type="text" placeholder="Buscar por nombre o SKU..."
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
 
         <table className="prod-table">
           <thead>
             <tr>
-              <th>Código</th>
+              <th>SKU</th>
               <th>Nombre</th>
-              <th>Marca</th>
-              <th>Modelo</th>
               <th>Categoría</th>
+              <th>Descripción</th>
               <th>Precio</th>
               <th>Stock</th>
               <th>Estado</th>
@@ -266,24 +280,23 @@ export default function ProductosView() {
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={9} className="prod-empty">No hay productos. Agrega uno arriba.</td></tr>
+              <tr><td colSpan={8} className="prod-empty">No hay productos. Agrega uno arriba.</td></tr>
             )}
             {filtered.map(p => {
               const st = stockStatus(p)
               const isEditing = editing?.id === p.id
               return (
                 <tr key={p.id} className={isEditing ? 'pv-row-editing' : ''}>
-                  <td className="prod-code">{p.code || '—'}</td>
+                  <td className="prod-code">{p.sku || '—'}</td>
                   <td className="prod-name-cell">
-                    {p.cover && <img src={p.cover} alt="" className="prod-row-img" />}
+                    {p.coverImageUrl && <img src={p.coverImageUrl} alt="" className="prod-row-img" />}
                     <span className="prod-name-text">{p.name}</span>
-                    {p.featured && <span className="prod-star">★</span>}
+                    {p.isFeatured && <span className="prod-star">★</span>}
                   </td>
-                  <td>{p.brand || '—'}</td>
-                  <td>{p.model || '—'}</td>
-                  <td>{p.category}</td>
+                  <td>{p.category?.name || '—'}</td>
+                  <td>{p.description?.substring(0, 30) || '—'}</td>
                   <td>S/ {Number(p.price).toFixed(2)}</td>
-                  <td>{p.stock}</td>
+                  <td>{p.stockCurrent}</td>
                   <td><span className={`prod-badge ${st.cls}`}>{st.label}</span></td>
                   <td className="prod-actions">
                     <button className="prod-edit-btn" onClick={() => loadEdit(p)} title="Editar">✏️</button>

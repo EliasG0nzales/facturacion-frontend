@@ -1,47 +1,14 @@
-import { useState } from 'react'
-import type { Page, User } from './types'
+import { useAuth } from './context/AuthContext'
 import LoginPage from './components/LoginPage'
-import RegisterPage from './components/RegisterPage'
-import RecoverPage from './components/RecoverPage'
 import Dashboard from './components/Dashboard'
 import './App.css'
 
 export default function App() {
-  const [page, setPage] = useState<Page>('login')
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const { isAuthenticated, user, logout } = useAuth()
 
-  const handleLogin = (user: User) => {
-    setCurrentUser(user)
-    setPage('dashboard')
+  if (isAuthenticated && user) {
+    return <Dashboard user={user} onLogout={logout} />
   }
 
-  const handleLogout = () => {
-    setCurrentUser(null)
-    setPage('login')
-  }
-
-  if (page === 'dashboard' && currentUser) {
-    return <Dashboard user={currentUser} onLogout={handleLogout} />
-  }
-
-  if (page === 'register') {
-    return (
-      <RegisterPage
-        onGoLogin={() => setPage('login')}
-        onRegistered={handleLogin}
-      />
-    )
-  }
-
-  if (page === 'recover') {
-    return <RecoverPage onGoLogin={() => setPage('login')} />
-  }
-
-  return (
-    <LoginPage
-      onLogin={handleLogin}
-      onGoRegister={() => setPage('register')}
-      onGoRecover={() => setPage('recover')}
-    />
-  )
+  return <LoginPage />
 }
