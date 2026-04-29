@@ -2,17 +2,14 @@
 
 <div align="center">
 
-![Build](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)
-![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?style=for-the-badge&logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![Estado](https://img.shields.io/badge/estado-en%20desarrollo-orange?style=for-the-badge)
 
-**Sistema integral de Punto de Venta (POS) e inventario para tienda de componentes informáticos.**
+**Sistema integral de Punto de Venta (POS), gestión de inventario serializado y clientes para tienda de componentes informáticos.**
 
-[🚀 Demo en vivo](#) · [📋 Reportar un bug](https://github.com/EliasG0nzales/facturacion-frontend/issues) · [💡 Solicitar función](https://github.com/EliasG0nzales/facturacion-frontend/issues)
+[📋 Issues](https://github.com/EliasG0nzales/facturacion-frontend/issues)
 
 </div>
 
@@ -20,1112 +17,547 @@
 
 ## 📋 Tabla de Contenidos
 
-1. [Descripción General](#-descripción-general)
-2. [Stack Tecnológico](#-stack-tecnológico)
-3. [Estructura del Proyecto](#-estructura-del-proyecto)
-4. [Módulos y Componentes](#-módulos-y-componentes)
-   - [Sistema de Autenticación](#sistema-de-autenticación)
-   - [Dashboard Principal](#dashboard-principal)
-   - [Sidebar de Navegación](#sidebar-de-navegación)
-   - [VenderView — Módulo POS](#venderview--módulo-pos)
-   - [ProductosView — Gestión de Inventario](#productosview--gestión-de-inventario)
-   - [ClientesView — Gestión de Clientes](#clientesview--gestión-de-clientes)
-5. [Interfaces TypeScript](#-interfaces-typescript)
-6. [Arquitectura localStorage](#-arquitectura-localstorage)
-7. [Sistema de Filtros Técnicos](#-sistema-de-filtros-técnicos)
-8. [Capa de Datos — mockData.ts](#-capa-de-datos--mockdatats)
-9. [Instalación y Configuración](#-instalación-y-configuración)
-10. [Uso y Credenciales Demo](#-uso-y-credenciales-demo)
-11. [Capturas de Pantalla](#-capturas-de-pantalla)
-12. [Checklist de Funcionalidades](#-checklist-de-funcionalidades)
-13. [Roadmap](#-roadmap)
-14. [Guía de Contribución](#-guía-de-contribución)
-15. [Licencia](#-licencia)
+1. [Descripción General](#descripción-general)
+2. [Stack Tecnológico](#stack-tecnológico)
+3. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
+4. [Estructura de Archivos](#estructura-de-archivos)
+5. [Módulos del Sistema](#módulos-del-sistema)
+6. [Capa de Tipos](#capa-de-tipos)
+7. [Capa de API](#capa-de-api)
+8. [Capa de Hooks](#capa-de-hooks)
+9. [Módulo de Inventario Serializado](#módulo-de-inventario-serializado)
+10. [Sistema de Filtros Técnicos](#sistema-de-filtros-técnicos)
+11. [Instalación](#instalación)
+12. [Variables de Entorno](#variables-de-entorno)
+13. [Estado del Proyecto](#estado-del-proyecto)
+14. [Roadmap](#roadmap)
 
 ---
 
-## 📖 Descripción General
+## Descripción General
 
-**VenderApp** es un sistema frontend completo de **Punto de Venta (POS)** y **gestión de inventario**, diseñado específicamente para tiendas de componentes informáticos. Permite registrar ventas, administrar productos por categoría, gestionar clientes y mantener un historial de actividad comercial — todo desde el navegador, sin dependencia de un servidor externo gracias al uso de `localStorage` como capa de persistencia.
+VenderApp es un frontend React + TypeScript para un sistema POS orientado a tiendas de componentes de cómputo. Se conecta a un backend REST mediante una capa de API centralizada.
 
-### ¿Qué problema resuelve?
+### Características principales
 
-Las tiendas pequeñas y medianas de hardware informático frecuentemente carecen de herramientas de gestión accesibles y económicas. VenderApp ofrece:
-
-- **Punto de venta visual**: carrito interactivo con tarjetas de producto animadas en 3D.
-- **Gestión de inventario completa**: altas, bajas, modificaciones con imágenes y galería de fotos.
-- **Filtros técnicos especializados**: propiedades como resolución de monitor, tipo de RAM, socket de placa madre, etc.
-- **Gestión de clientes integrada**: historial de compras, badges de fidelidad y ranking de clientes activos.
-- **Persistencia sin backend**: toda la información se guarda en `localStorage`, sin necesidad de servidor.
-
-### Características destacadas
-
-| Característica | Descripción |
-|----------------|-------------|
-| 🎴 Tarjetas 3D | Flip cards con animación CSS para cada producto |
-| 🔍 Búsqueda universal | Por nombre de producto o código de barras |
-| 🏷️ 10 categorías | Cada una con ícono SVG personalizado dibujado a mano |
-| 🔧 Filtros técnicos | Chips de filtro específicos por categoría (resolución, RAM, socket, etc.) |
-| 🛒 Carrito deslizante | Panel lateral con controles de cantidad y confirmación de venta |
-| 📸 Galería de imágenes | Carrusel con miniaturas en el modal de detalle de producto |
-| 👥 CRM básico | Registro automático de clientes al crear cuenta, ranking de activos |
-| 💾 Sin backend | Persistencia 100% en `localStorage` |
+- Autenticación con JWT y sesión persistente
+- Módulo POS con carrito, búsqueda por código de barras y filtros técnicos por categoría
+- Gestión de productos con imágenes, galería y especificaciones técnicas
+- **Inventario serializado**: registro de números de serie (SN) por unidad física, trazabilidad completa y gestión de estados (DISPONIBLE → VENDIDO → GARANTIA → REPARACION)
+- Gestión de clientes con historial de compras y ranking de activos
+- Historial de ventas
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
-| Tecnología | Versión | Rol |
-|------------|---------|-----|
-| [React](https://react.dev/) | 19 | Librería principal de UI |
-| [TypeScript](https://www.typescriptlang.org/) | 6 | Tipado estático |
-| [Vite](https://vitejs.dev/) | 8 | Bundler y servidor de desarrollo |
-| CSS puro | — | Estilos (sin librerías externas) |
-| localStorage | — | Persistencia de datos en el cliente |
-| FileReader API | — | Carga de imágenes en base64 |
-| SVG inline | — | Íconos de categorías dibujados a mano |
-
-> **Nota:** No se utiliza ninguna librería de componentes externos (Material UI, Ant Design, Chakra, etc.). Todo el diseño y los componentes están construidos desde cero con CSS puro, lo que hace que el bundle final sea extremadamente liviano.
+| Tecnología | Versión | Uso |
+|---|---|---|
+| React | 19 | UI |
+| TypeScript | 6 | Tipado estático |
+| Vite | 8 | Bundler / dev server |
+| CSS puro | — | Estilos sin librerías externas |
+| Fetch API | — | Llamadas HTTP al backend |
 
 ---
 
-## 📁 Estructura del Proyecto
+## Arquitectura del Proyecto
+
+El proyecto sigue una arquitectura en capas. Cada capa tiene una responsabilidad única:
 
 ```
-facturacion-frontend/
-├── public/
-│   └── vite.svg
-├── src/
-│   ├── App.tsx                    # Router principal: login / register / recover / dashboard
-│   ├── App.css                    # Estilos globales (1000+ líneas)
-│   ├── index.css                  # Reset base
-│   ├── main.tsx                   # Punto de entrada de la aplicación
-│   ├── types.ts                   # Interfaces TypeScript: User, Product, Client
-│   │
-│   ├── data/
-│   │   ├── mockData.ts            # Capa de persistencia con localStorage
-│   │   └── filterConfig.ts        # Configuración de filtros técnicos por categoría
-│   │
-│   └── components/
-│       ├── LoginPage.tsx          # Formulario de login con persistencia de sesión
-│       ├── RegisterPage.tsx       # Registro que crea User + Client simultáneamente
-│       ├── RecoverPage.tsx        # Simulación de recuperación de contraseña por email
-│       ├── Dashboard.tsx          # Contenedor principal del panel de control
-│       │
-│       └── dashboard/
-│           ├── Sidebar.tsx        # Barra lateral de navegación izquierda
-│           ├── VenderView.tsx     # Módulo POS de ventas (componente más complejo)
-│           ├── ProductosView.tsx  # Gestión de productos: formulario + tabla
-│           ├── ClientesView.tsx   # Gestión de clientes con ranking
-│           └── ProductCard.tsx    # Tarjeta individual de producto con flip 3D
-├── index.html
-├── package.json
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
+┌─────────────────────────────────────────┐
+│           COMPONENTES (UI)              │  src/components/
+│  Solo renderizan, llaman hooks          │
+├─────────────────────────────────────────┤
+│              HOOKS                      │  src/hooks/
+│  Estado + lógica de negocio             │
+│  Llaman funciones de la capa API        │
+├─────────────────────────────────────────┤
+│           CAPA DE API                   │  src/api/
+│  Una función por endpoint               │
+│  Usa apiClient() centralizado           │
+├─────────────────────────────────────────┤
+│           API CLIENT                    │  src/api/client.ts
+│  fetch + auth token + manejo de errores │
+├─────────────────────────────────────────┤
+│              TIPOS                      │  src/types/
+│  Interfaces y tipos compartidos         │
+└─────────────────────────────────────────┘
 ```
 
-### Descripción de archivos clave
-
-| Archivo | Descripción |
-|---------|-------------|
-| `App.tsx` | Controla el estado global de vista (`login`, `register`, `recover`, `dashboard`) y la sesión del usuario |
-| `types.ts` | Define las tres interfaces principales: `User`, `Product` y `Client` |
-| `App.css` | Más de 1000 líneas de CSS, incluyendo variables de color, animaciones, layout de dashboard, tarjetas flip y modales |
-| `mockData.ts` | Funciones genéricas de lectura/escritura en `localStorage`, datos de ejemplo y lista de categorías |
-| `filterConfig.ts` | Metadatos por categoría (color, ícono, descripción) y definición de filtros técnicos con opciones |
+**Regla clave:** cuando el backend cambie un endpoint, solo se modifica el archivo correspondiente en `src/api/`. Los hooks y componentes no cambian.
 
 ---
 
-## 🧩 Módulos y Componentes
-
-### Sistema de Autenticación
-
-El sistema de autenticación está completamente basado en `localStorage`. No existe comunicación con ningún servidor externo.
-
-#### `LoginPage.tsx`
-
-- Formulario con campos `email` y `password`.
-- Al iniciar sesión, busca el usuario en `venderapp_users` de `localStorage`.
-- Si las credenciales son correctas, guarda el objeto `User` en `venderapp_session`.
-- Al recargar la página, `App.tsx` detecta la sesión guardada y muestra el Dashboard directamente.
-- Enlace a `RegisterPage` y `RecoverPage`.
-
-#### `RegisterPage.tsx`
-
-- Formulario con campos: nombre, email y contraseña.
-- Al registrarse, crea **dos registros simultáneos**:
-  1. Un objeto `User` → guardado en `venderapp_users`.
-  2. Un objeto `Client` con historial vacío → guardado en `venderapp_clients`.
-- Esto garantiza que el nuevo usuario aparezca automáticamente en la lista de clientes de `ClientesView`.
-
-#### `RecoverPage.tsx`
-
-- Simula el flujo de recuperación de contraseña por email.
-- Muestra un mensaje de confirmación indicando que se ha enviado un enlace al correo ingresado.
-- No realiza ninguna acción real (simulación de UI/UX).
-
-#### Flujo de autenticación
+## Estructura de Archivos
 
 ```
-┌──────────────┐    email/pass OK    ┌───────────────────┐
-│  LoginPage   │ ─────────────────▶  │    Dashboard      │
-└──────────────┘                     └───────────────────┘
-       │  no cuenta                          ▲
-       ▼                                     │ auto-login
-┌──────────────┐    crea User+Client  ┌──────────────────┐
-│ RegisterPage │ ────────────────────▶│  venderapp_      │
-└──────────────┘                      │  session         │
-       │  olvidé contraseña           └──────────────────┘
-       ▼
-┌──────────────┐
-│ RecoverPage  │ (simulación)
-└──────────────┘
+src/
+├── App.tsx                          # Entry point: usa AuthContext para decidir qué renderizar
+├── App.css                          # Estilos globales
+│
+├── context/
+│   └── AuthContext.tsx              # Proveedor de autenticación global (JWT + sesión)
+│
+├── types/                           # Contratos de datos TypeScript
+│   ├── index.ts                     # Re-exporta todos los tipos + DashboardView
+│   ├── auth.ts                      # User, AuthResponse, LoginCredentials
+│   ├── product.ts                   # Product, Category, CreateProductPayload...
+│   ├── customer.ts                  # Customer y payloads relacionados
+│   ├── sale.ts                      # Sale, SaleItem, SalePayment, CreateSalePayload
+│   ├── inventory.ts                 # ProductInstance, InstanceStatus, payloads de inventario
+│   ├── notification.ts              # Tipos de notificaciones
+│   └── pagination.ts                # PaginatedResponse<T>
+│
+├── api/                             # Una función por endpoint del backend
+│   ├── client.ts                    # apiClient(): fetch centralizado con auth header
+│   ├── authApi.ts                   # login()
+│   ├── productsApi.ts               # getProducts(), createProduct(), adjustStock()...
+│   ├── customersApi.ts              # getCustomers(), createCustomer()...
+│   ├── salesApi.ts                  # getSales(), createSale()...
+│   └── inventoryApi.ts              # receiveInstances(), getInstanceBySN(), updateInstanceStatus()...
+│                                    # ⚠️ Stubs activos — endpoints pendientes de confirmar con backend
+│
+├── hooks/                           # Estado + lógica, consumen la capa API
+│   ├── useProducts.ts               # CRUD productos + categorías
+│   ├── useCustomers.ts              # CRUD clientes
+│   ├── useSales.ts                  # Ventas + historial
+│   └── useInventory.ts              # Inventario serializado (SN, estados, trazabilidad)
+│
+├── data/
+│   └── paymentMethods.ts            # Métodos de pago disponibles (datos estáticos)
+│
+└── components/
+    ├── LoginPage.tsx                # Formulario de login
+    ├── Dashboard.tsx                # Contenedor principal del panel
+    │
+    └── dashboard/
+        ├── Sidebar.tsx              # Navegación lateral
+        ├── VenderView.tsx           # Módulo POS completo
+        ├── ProductosView.tsx        # Gestión de productos
+        ├── InventarioView.tsx       # Inventario serializado (SN)
+        ├── ClientesView.tsx         # Gestión de clientes
+        └── ProductCard.tsx          # Tarjeta de producto con flip 3D
 ```
 
 ---
 
-### Dashboard Principal
+## Módulos del Sistema
 
-#### `Dashboard.tsx`
+### Autenticación — `AuthContext.tsx`
 
-Contenedor principal que recibe el usuario de sesión y controla qué vista del dashboard se muestra. Compone:
-- `Sidebar` (navegación izquierda, siempre visible)
-- `VenderView` | `ProductosView` | `ClientesView` (área de contenido principal)
+- Usa `useContext` para exponer `user`, `token`, `isAuthenticated`, `login()`, `logout()`
+- La sesión se guarda en `localStorage` bajo la clave `venderapp_session`
+- `App.tsx` consume el contexto: si `isAuthenticated` → muestra Dashboard, si no → LoginPage
 
-El estado de vista activa (`vender`, `productos`, `clientes`) se gestiona localmente en `Dashboard.tsx` y se pasa al `Sidebar` para resaltar el ítem activo.
+```typescript
+const { user, login, logout, isAuthenticated } = useAuth()
+```
 
 ---
 
-### Sidebar de Navegación
+### Dashboard — `Dashboard.tsx`
 
-#### `Sidebar.tsx`
+Contenedor que recibe el `user` del contexto y controla la vista activa:
 
-Barra lateral izquierda fija con tres secciones:
+```
+vender | productos | inventario | clientes
+```
 
-**Cabecera (Avatar de usuario)**
-- Muestra la primera letra del nombre del usuario en un círculo de color.
-- Debajo, el nombre completo del usuario.
+---
 
-**Navegación principal**
+### Sidebar — `Sidebar.tsx`
 
-| Ícono | Sección | Descripción |
-|-------|---------|-------------|
-| 🏷️ | Vender | Abre el módulo POS |
-| 📦 | Productos | Abre la gestión de inventario |
-| 👤 | Clientes | Abre la gestión de clientes |
+Navegación lateral con 4 ítems:
 
-**Pie del sidebar**
-
-| Ícono | Función |
-|-------|---------|
-| ❓ | Ayuda (placeholder) |
-| ⚙️ | Configuración (placeholder) |
-| 🚪 | Cerrar sesión: limpia `venderapp_session` y retorna al `LoginPage` |
+| Ícono | Vista | Descripción |
+|---|---|---|
+| 🏷️ | vender | Módulo POS |
+| 📦 | productos | Gestión de inventario |
+| 🔢 | inventario | Serialización y trazabilidad |
+| 👤 | clientes | Gestión de clientes |
 
 ---
 
 ### VenderView — Módulo POS
 
-`VenderView.tsx` es el componente más extenso y complejo del proyecto. Implementa el punto de venta completo.
+El componente más complejo. Implementa el punto de venta completo:
 
-#### Estructura visual
+**Búsqueda y filtros:**
+- Campo de búsqueda por nombre o código de barras
+- Al presionar `Enter` con un código exacto → agrega el producto al carrito automáticamente (compatible con pistola lectora HID)
+- Dropdown de categorías con íconos SVG personalizados
+- Panel de filtros técnicos por categoría (chips multi-select)
 
-```
-┌─────────────────────────────────────────────────────┐ ┌──────────────┐
-│  [🔍 Buscar por nombre o código...]  [Categoría ▼]  │ │   CARRITO    │
-│  [🔧 Filtros]                                        │ │              │
-├─────────────────────────────────────────────────────┤ │  Item 1      │
-│                                                     │ │  Item 2      │
-│  [Tarjeta] [Tarjeta] [Tarjeta] [Tarjeta]           │ │  ...         │
-│  [Tarjeta] [Tarjeta] [Tarjeta] [Tarjeta]           │ ├──────────────┤
-│                                                     │ │ Subtotal: $x │
-│                                                     │ │ Total:   $x  │
-│                                                     │ │[Confirmar 🛒]│
-└─────────────────────────────────────────────────────┘ └──────────────┘
-```
+**Grid de productos:**
+- Tarjetas con animación CSS flip 3D
+- Cara trasera: imagen del producto + borde animado
+- Cara delantera: categoría, nombre, precio, stock, botón agregar
+- Modal de detalle con carrusel de imágenes
 
-#### 1. Barra de búsqueda
-
-- Campo de texto que filtra productos en tiempo real por **nombre** o **código de barras**.
-- Al presionar `Enter` con un código que coincida exactamente con un producto, ese producto se **agrega automáticamente al carrito** — facilitando el uso con lectores de código de barras HID.
-
-#### 2. Selector de categoría
-
-Dropdown con las 10 categorías del sistema más la opción "Todos los Productos". Cada opción muestra un SVG personalizado dibujado inline para esa categoría.
-
-| Categoría | Color | Descripción |
-|-----------|-------|-------------|
-| Monitores 🖥️ | `#3b82f6` Azul | Pantallas y displays |
-| Case 🖨️ | `#6b7280` Gris | Gabinetes de PC |
-| PC Completa 💻 | `#8b5cf6` Violeta | Equipos completos armados |
-| Disco SSD 💾 | `#f59e0b` Ámbar | Almacenamiento sólido |
-| Estabilizador 🔋 | `#10b981` Verde | Reguladores de voltaje |
-| Fuente de Poder ⚡ | `#ef4444` Rojo | PSU y fuentes ATX |
-| Memoria RAM 🧩 | `#06b6d4` Cian | Módulos de memoria |
-| Periféricos 🖱️ | `#84cc16` Lima | Teclados, mouse, auriculares |
-| Placa Madre 🔌 | `#f97316` Naranja | Motherboards |
-| Tarjetas de Video 🎮 | `#a855f7` Violeta | GPUs y tarjetas gráficas |
-
-#### 3. Sistema de filtros
-
-Botón `🔧 Filtros` que abre un panel desplegable con **chips de selección múltiple** específicos para la categoría activa. Los filtros se describen en detalle en la sección [Sistema de Filtros Técnicos](#-sistema-de-filtros-técnicos).
-
-#### 4. Grilla de productos — Tarjetas 3D Flip
-
-Cada producto se renderiza como una `ProductCard` con animación **CSS 3D flip** al pasar el mouse. La tarjeta tiene dos caras:
-
-**Cara trasera (back face)** — visible en reposo:
-- Imagen de portada del producto en tamaño completo.
-- Borde animado con rotación continua (`@keyframes rotateBorder`) en el color de la categoría del producto.
-- Botón `🔍 Zoom` para abrir el modal de detalle.
-
-**Cara delantera (front face)** — visible al hacer hover:
-- Fondo con círculos de colores animados (efecto decorativo generativo).
-- Badge de categoría con el color correspondiente.
-- Nombre del producto, precio formateado, stock disponible, marca.
-- Botón **"Agregar al carrito"** con icono de carrito.
-
-#### 5. Carrito de compras
-
-Panel lateral deslizante desde la derecha.
-
-**Estado vacío:**
-- Ilustración SVG de carrito vacío dibujada a mano.
-- Texto: *"Tu Carrito está vacío."*
-- Subtexto de instrucción.
-
-**Con ítems:**
-| Elemento | Descripción |
-|----------|-------------|
-| Imagen | Miniatura del producto |
-| Nombre | Nombre completo del producto |
-| Precio unitario | Precio formateado en moneda |
-| Controles `−` / `+` | Modifican la cantidad; `−` con qty=1 elimina el ítem |
-| Subtotal | Precio × cantidad |
-
-**Pie del carrito:**
-- Subtotal acumulado.
-- Total final.
-- Botón **"Confirmar Venta 🛒"** — descuenta stock, registra la venta.
-- Botón **"Vaciar carrito 🗑"** — limpia todos los ítems.
-
-#### 6. Modal de detalle de producto
-
-Se activa con el botón 🔍 en la cara trasera de la tarjeta.
-
-- **Carrusel de imágenes** con flechas anterior/siguiente.
-- **Miniaturas (thumbnails)** de todas las imágenes de la galería.
-- Nombre, marca, modelo, categoría, precio, stock.
-- Tags / etiquetas del producto.
-- Descripción larga.
-- Botón **"Agregar al carrito"** desde el modal.
-
-#### 7. Modal de historial de ventas
-
-Muestra el registro de transacciones previas (en desarrollo).
+**Carrito lateral:**
+- Panel deslizante desde la derecha
+- Estado vacío con ilustración SVG
+- Controles de cantidad por ítem
+- Total calculado en tiempo real
+- Confirmar venta / Vaciar carrito
 
 ---
 
-### ProductosView — Gestión de Inventario
+### ProductosView — Gestión de Productos
 
-`ProductosView.tsx` presenta en la misma pantalla un formulario de alta/edición en la parte superior y la tabla de inventario debajo.
+Vista dividida en dos secciones en la misma pantalla:
 
-#### Formulario de producto — 3 columnas
+**Formulario superior (3 columnas):**
+- Col 1: imagen principal + galería de 4 fotos
+- Col 2: nombre, marca, modelo, precio, categoría, descripción, código, costo
+- Col 3: stock actual, stock mínimo, guardar/actualizar
 
-**Columna 1 — Imágenes**
+**Tabla inferior:**
+- Columnas: Código · Nombre · Marca · Modelo · Categoría · Precio · Stock · Estado · Acciones
+- Badge de estado: `En stock` (verde) / `Stock bajo` (amarillo) / `Sin stock` (rojo)
+- ✏️ carga el producto en el formulario para editar · 🗑 elimina
 
-| Elemento | Descripción |
-|----------|-------------|
-| Imagen principal | Área de carga con `<input type="file">`. Convierte la imagen a base64 mediante `FileReader` y la guarda en `localStorage` |
-| 4 slots de galería | Miniaturas con placeholder SVG. Al hacer clic, abre el selector de archivo para esa posición |
+---
 
-**Columna 2 — Datos principales**
+### InventarioView — Inventario Serializado
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| Nombre | `text` | Nombre del producto |
-| Marca | `text` | Fabricante / marca |
-| Modelo | `text` | Referencia de modelo |
-| Precio de venta | `number` | Precio al público |
-| Categoría | `select` | Lista de las 10 categorías |
-| Descripción | `textarea` | Descripción larga del producto |
-| Código de producto | `text` | Código único / código de barras |
-| Costo | `number` | Precio de costo (para cálculo de margen) |
+Módulo de trazabilidad por número de serie. Tiene 3 pestañas:
 
-**Columna 3 — Stock y controles**
+#### 📥 Recibir mercadería
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| Stock actual | `number` | Unidades disponibles |
-| Stock mínimo | `number` | Umbral para alerta de stock bajo |
-| Botón Guardar/Actualizar | `button` | Cambia a "Actualizar Producto" cuando se edita |
+Flujo de ingreso masivo al almacén:
 
-**Barra superior del formulario**
+```
+1. Seleccionar producto + nombre del operario
+2. Escanear SN uno por uno con la pistola (Enter por cada uno)
+3. El sistema muestra ✓ SN: ABC123001 en tiempo real
+4. "Finalizar recepción" → llama a receiveInstances() → backend
+```
 
-| Control | Descripción |
-|---------|-------------|
-| Hint de instrucciones | *"Registre sus productos..."* |
-| ⭐ Destacado | Checkbox que marca el producto como featured |
-| Etiqueta | `select`: Sin etiqueta / Nuevo / Oferta / Destacado / Agotado |
-| Cancelar edición | Botón visible solo en modo edición; limpia el formulario |
+#### 🔍 Buscar por SN
 
-#### Tabla de inventario
+Trazabilidad completa de una unidad:
+- Busca por número de serie exacto
+- Muestra: producto, estado actual, quién lo recibió, cuándo, a quién se vendió
+- Historial completo de eventos con fecha, tipo y detalle
+- Botones para cambiar estado: GARANTIA / REPARACION / DEVUELTO / OBSOLETO
 
-| Columna | Descripción |
-|---------|-------------|
-| Código | Código de barras o ID del producto |
-| Nombre | Miniatura de imagen + nombre. Estrella ★ si es featured |
-| Marca | Fabricante |
-| Modelo | Referencia |
-| Categoría | Nombre de categoría |
-| Precio | Precio de venta formateado |
-| Stock | Cantidad disponible |
-| Estado | Badge dinámico: `En stock` (verde) / `Stock bajo` (amarillo) / `Sin stock` (rojo) |
-| Acciones | ✏️ Cargar en formulario · 🗑 Eliminar |
+#### 📋 Historial de unidades
 
-**Comportamiento de edición:**
-- Al hacer clic en ✏️, la fila se resalta en amarillo.
-- Todos los campos del formulario se completan con los datos del producto.
-- El botón cambia a **"Actualizar Producto"**.
-- Al guardar, se actualiza el registro en `localStorage` y la tabla se refresca.
+- Resumen por producto: disponibles, vendidos, en garantía, en reparación
+- Tabla filtrable por producto y estado
 
 ---
 
 ### ClientesView — Gestión de Clientes
 
-#### Estructura visual
-
-```
-┌─────────────────────────────────────┐ ┌──────────────────────────┐
-│  [🔍 Buscar cliente]  [+ Cliente]  │ │  CLIENTES MÁS ACTIVOS   │
-├─────────────────────────────────────┤ │                          │
-│ 🤖 username  3 órdenes | S/450     │ │  1. Ana García   🥇      │
-│    Último: 15/01/2025              │ │     S/1,200 · Frecuente  │
-│ 🤖 username  1 orden   | S/120     │ │                          │
-│    Último: 10/01/2025              │ │  2. Carlos M.    🥈      │
-│ ...                                │ │     S/890 · Regular      │
-└─────────────────────────────────────┘ │                          │
-                                        │  3. Pedro L.    🥉      │
-                                        │     S/530 · Ocasional   │
-                                        └──────────────────────────┘
-```
-
-#### Lista de clientes
-
-- Barra de búsqueda filtra por nombre en tiempo real.
-- Botón **"+ Cliente"** abre un modal para agregar cliente manualmente (nombre + email).
-- Cada fila muestra:
-  - Avatar robot 🤖 generado por CSS.
-  - Etiqueta `username`.
-  - Contador de órdenes y monto total gastado.
-  - Fecha de última actividad.
-
-#### Panel "Clientes Más Activos"
-
-Sidebar derecho fijo que muestra el **top 3 de clientes** ordenados por `totalSpent`:
-
-| Elemento | Descripción |
-|----------|-------------|
-| Posición | Ícono 🥇🥈🥉 según ranking |
-| Nombre | Nombre del cliente |
-| Badge | Badge de fidelidad según frecuencia de compra |
-| Acumulado | Total gastado formateado |
-| Frecuencia | Etiqueta: Frecuente / Regular / Ocasional |
-| Enlace | "Ver Actividad →" (placeholder para historial detallado) |
-
-#### Registro automático desde Register
-
-Cuando un usuario nuevo se registra en `RegisterPage`, se crea automáticamente un objeto `Client` con:
-
-```typescript
-{
-  id: user.id,
-  name: user.name,
-  email: user.email,
-  purchases: 0,
-  totalSpent: 0,
-  lastActivity: new Date().toISOString(),
-  registeredAt: new Date().toISOString(),
-  frequency: "Nuevo"
-}
-```
-
-Esto garantiza que todos los usuarios del sistema aparezcan en la lista de clientes desde el primer día.
+- Buscador por nombre en tiempo real
+- Lista con avatar, historial de compras y última actividad
+- Panel lateral con top 3 clientes por gasto acumulado
+- Modal para agregar cliente manualmente
 
 ---
 
-## 📐 Interfaces TypeScript
+## Capa de Tipos
 
-Definidas en `src/types.ts`:
+Todos los tipos están en `src/types/` y se re-exportan desde `src/types/index.ts`.
 
-### `User`
-
-Representa a un usuario autenticado del sistema (vendedor, administrador, etc.).
-
+### `auth.ts`
 ```typescript
 interface User {
-  id: string;          // UUID o timestamp como string
-  name: string;        // Nombre completo del usuario
-  email: string;       // Email (usado como credencial de login)
-  password: string;    // Contraseña en texto plano (⚠️ sin hashear — solo demo)
+  id: number
+  username: string
+  email: string
+  role: 'ADMIN' | 'VENDEDOR'
+  isActive: boolean
+  createdAt: string
 }
 ```
 
-> ⚠️ **Aviso de seguridad:** Las contraseñas se guardan en texto plano en `localStorage`. Esto es aceptable para un prototipo frontend, pero **no debe usarse en producción**. Al migrar a backend, se implementará bcrypt o similar.
-
----
-
-### `Product`
-
-Representa un producto del inventario.
-
+### `product.ts`
 ```typescript
 interface Product {
-  id: string;             // Identificador único
-  name: string;           // Nombre del producto
-  brand: string;          // Marca / fabricante
-  model: string;          // Modelo específico
-  price: number;          // Precio de venta al público
-  cost: number;           // Precio de costo (para margen)
-  code: string;           // Código de barras o SKU
-  description: string;    // Descripción larga del producto
-  stock: number;          // Unidades disponibles actualmente
-  minStock: number;       // Stock mínimo antes de alerta
-  sold: number;           // Unidades vendidas históricamente
-  category: string;       // Una de las 10 categorías predefinidas
-  label: string;          // "Sin etiqueta" | "Nuevo" | "Oferta" | "Destacado" | "Agotado"
-  featured: boolean;      // Si aparece como destacado (★)
-  cover?: string;         // Imagen principal en base64 (opcional)
-  gallery: string[];      // Array de imágenes adicionales en base64
+  id: number
+  sku?: string
+  name: string
+  price: number
+  stockCurrent: number
+  stockMin: number
+  categoryId?: number
+  coverImageUrl?: string
+  isFeatured: boolean
+  isActive: boolean
+  category?: Category
 }
 ```
 
-**Lógica de estado de stock:**
-
-| Condición | Badge | Color |
-|-----------|-------|-------|
-| `stock > minStock` | En stock | 🟢 Verde |
-| `0 < stock <= minStock` | Stock bajo | 🟡 Amarillo |
-| `stock === 0` | Sin stock | 🔴 Rojo |
-
----
-
-### `Client`
-
-Representa un cliente del negocio, con historial de compras.
-
+### `inventory.ts`
 ```typescript
-interface Client {
-  id: string;             // Mismo id que el User si se registró
-  name: string;           // Nombre completo del cliente
-  email: string;          // Email de contacto
-  purchases: number;      // Número total de órdenes/compras
-  totalSpent: number;     // Monto acumulado gastado (en moneda local)
-  lastActivity: string;   // ISO date string de la última compra o actividad
-  registeredAt: string;   // ISO date string del registro
-  frequency: string;      // "Nuevo" | "Ocasional" | "Regular" | "Frecuente" | "VIP"
-  badge?: string;         // Badge opcional de fidelidad (puede ser undefined)
+type InstanceStatus =
+  | 'DISPONIBLE' | 'VENDIDO' | 'GARANTIA'
+  | 'REPARACION' | 'DEVUELTO' | 'OBSOLETO'
+
+interface ProductInstance {
+  id: number
+  serialNumber: string
+  productId: number
+  status: InstanceStatus
+  receivedAt: string
+  receivedBy: string
+  soldAt?: string
+  soldTo?: string
+  warrantyExpiresAt?: string
+  history?: InstanceEvent[]
 }
 ```
 
-**Lógica de frecuencia sugerida** (a implementar en versión completa):
-
-| Compras | Frecuencia |
-|---------|-----------|
-| 0 | Nuevo |
-| 1–2 | Ocasional |
-| 3–5 | Regular |
-| 6–10 | Frecuente |
-| 11+ | VIP |
-
----
-
-## 💾 Arquitectura localStorage
-
-VenderApp utiliza `localStorage` del navegador como base de datos cliente. Toda la información persiste entre sesiones de usuario sin necesidad de un servidor.
-
-### Claves de almacenamiento
-
-| Clave | Tipo | Contenido |
-|-------|------|-----------|
-| `venderapp_users` | `User[]` | Todos los usuarios registrados |
-| `venderapp_clients` | `Client[]` | Todos los clientes |
-| `venderapp_products` | `Product[]` | Catálogo completo de productos |
-| `venderapp_session` | `User` | Usuario actualmente autenticado |
-
-### Formato de almacenamiento
-
-Todos los valores se guardan como **JSON serializado** mediante `JSON.stringify` y se leen con `JSON.parse`:
-
+### `sale.ts`
 ```typescript
-// Ejemplo: guardar productos
-localStorage.setItem('venderapp_products', JSON.stringify(products));
-
-// Ejemplo: leer productos
-const raw = localStorage.getItem('venderapp_products');
-const products: Product[] = raw ? JSON.parse(raw) : [];
-```
-
-### Diagrama de flujo de datos
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                     LOCALSTORAGE                         │
-│                                                          │
-│  venderapp_users    ──────▶  LoginPage, RegisterPage     │
-│  venderapp_clients  ──────▶  ClientesView, RegisterPage  │
-│  venderapp_products ──────▶  VenderView, ProductosView   │
-│  venderapp_session  ──────▶  App.tsx (auth guard)        │
-└──────────────────────────────────────────────────────────┘
-         ▲                              │
-         │ saveToStorage()              │ loadFromStorage()
-         │                              ▼
-      Componentes React ──── Estado local (useState)
-```
-
-### Consideraciones de capacidad
-
-`localStorage` tiene un límite de ~5 MB por dominio. Dado que las imágenes se guardan en **base64** (que incrementa el tamaño en ~33%), es importante considerar:
-
-- Una imagen de 1 MB → ~1.33 MB en base64.
-- Con 4 imágenes por producto y 100 productos: ~533 MB (excede el límite).
-- **Recomendación para producción:** migrar las imágenes a un almacenamiento externo (S3, Cloudinary, etc.) y guardar solo la URL en `localStorage`.
-
----
-
-## 🔧 Sistema de Filtros Técnicos
-
-Definido en `src/data/filterConfig.ts`, este sistema permite filtrar productos por propiedades técnicas específicas según su categoría.
-
-### Arquitectura del sistema de filtros
-
-```typescript
-// Metadatos visuales por categoría
-interface CatMeta {
-  icon: string;         // Emoji representativo
-  color: string;        // Color hex del tema
-  description: string;  // Descripción de la categoría
-}
-
-// Campo de filtro individual
-interface FilterField {
-  key: string;          // Identificador único del filtro
-  label: string;        // Etiqueta visible al usuario
-  icon: string;         // Emoji o ícono del filtro
-  unit?: string;        // Unidad de medida (opcional: "Hz", "GB", "W", etc.)
-  options: string[];    // Opciones disponibles como chips seleccionables
+interface Sale {
+  id: number
+  subtotal: number
+  descuento: number
+  total: number
+  status: 'COMPLETADA' | 'ANULADA' | 'PENDIENTE_PAGO'
+  createdAt: string
+  items?: SaleItem[]
+  payments?: SalePayment[]
 }
 ```
 
-### Exports del módulo
+---
 
-| Export | Tipo | Descripción |
-|--------|------|-------------|
-| `CAT_META` | `Record<string, CatMeta>` | Ícono, color y descripción por categoría |
-| `TECH_FILTERS` | `Record<string, FilterField[]>` | Grupos de filtros por categoría |
-| `BRANDS` | `Record<string, string[]>` | Marcas disponibles por categoría |
+## Capa de API
 
-### Filtros por categoría
+### `client.ts` — Cliente HTTP centralizado
 
-#### 🖥️ Monitores
-
-| Filtro | Opciones |
-|--------|---------|
-| Tamaño | 21", 24", 27", 32", 34", 43", 49" |
-| Resolución | 1080p (FHD), 1440p (QHD), 4K (UHD) |
-| Tasa de refresco | 60 Hz, 75 Hz, 100 Hz, 144 Hz, 165 Hz, 240 Hz, 360 Hz |
-| Tipo de panel | IPS, VA, TN, OLED |
-| Conectividad | HDMI, DisplayPort, USB-C, VGA |
-
-#### 🖨️ Case (Gabinetes)
-
-| Filtro | Opciones |
-|--------|---------|
-| Factor de forma | Mini-ITX, Micro-ATX, ATX, Full Tower, EATX |
-| Material | Acero, Aluminio, Vidrio templado |
-| Ventilación | 1 fan, 2 fans, 3 fans, 4+ fans |
-| Color | Negro, Blanco, Gris, RGB |
-
-#### 💻 PC Completa
-
-| Filtro | Opciones |
-|--------|---------|
-| Procesador | Intel Core i3, Intel Core i5, Intel Core i7, Ryzen 5, Ryzen 7, Ryzen 9 |
-| RAM incluida | 8 GB, 16 GB, 32 GB, 64 GB |
-| Almacenamiento | 256 GB SSD, 512 GB SSD, 1 TB SSD, 2 TB SSD |
-| GPU | Integrada, GTX 1650, RTX 3060, RTX 4070, RX 6600, RX 7700 |
-| Uso | Oficina, Gaming, Diseño, Workstation |
-
-#### 💾 Disco SSD
-
-| Filtro | Opciones |
-|--------|---------|
-| Capacidad | 128 GB, 256 GB, 512 GB, 1 TB, 2 TB |
-| Interfaz | SATA III, NVMe PCIe 3.0, NVMe PCIe 4.0, NVMe PCIe 5.0 |
-| Factor de forma | 2.5", M.2 2242, M.2 2280 |
-| Velocidad de lectura | hasta 550 MB/s, hasta 3500 MB/s, hasta 5000 MB/s, hasta 7000 MB/s |
-
-#### 🔋 Estabilizador
-
-| Filtro | Opciones |
-|--------|---------|
-| Potencia | 500 VA, 750 VA, 1000 VA, 1500 VA, 2000 VA, 3000 VA |
-| Tipo | Offline, Online, Interactivo |
-| Número de salidas | 4, 6, 8, 10 |
-
-#### ⚡ Fuente de Poder (PSU)
-
-| Filtro | Opciones |
-|--------|---------|
-| Potencia | 450 W, 550 W, 650 W, 750 W, 850 W, 1000 W |
-| Certificación 80 Plus | White, Bronze, Gold, Platinum, Titanium |
-| Modularidad | No modular, Semi-modular, Totalmente modular |
-
-#### 🧩 Memoria RAM
-
-| Filtro | Opciones |
-|--------|---------|
-| Capacidad | 4 GB, 8 GB, 16 GB, 32 GB, 64 GB |
-| Tipo | DDR4, DDR5 |
-| Velocidad | 2400 MHz, 2666 MHz, 3200 MHz, 3600 MHz, 4800 MHz, 5200 MHz, 6000 MHz |
-| Canales | 1 módulo (Single), 2 módulos (Dual), 4 módulos (Quad) |
-
-#### 🖱️ Periféricos
-
-| Filtro | Opciones |
-|--------|---------|
-| Tipo | Teclado, Mouse, Auriculares, Webcam, Mousepad, Headset |
-| Conectividad | USB, USB-C, Bluetooth, Inalámbrico 2.4 GHz |
-| Iluminación | Sin iluminación, RGB, ARGB |
-
-#### 🔌 Placa Madre
-
-| Filtro | Opciones |
-|--------|---------|
-| Socket | LGA 1700, AM4, AM5, LGA 1200 |
-| Chipset | B450, B550, X570, B660, B760, Z790, X670, X670E |
-| Factor de forma | Mini-ITX, Micro-ATX, ATX, EATX |
-| Ranuras RAM | 2 ranuras, 4 ranuras |
-
-#### 🎮 Tarjetas de Video
-
-| Filtro | Opciones |
-|--------|---------|
-| Marca de GPU | NVIDIA, AMD |
-| Modelo | GTX 1650, RTX 3060, RTX 3070, RTX 4070, RTX 4080, RX 6600, RX 6700, RX 7700 |
-| VRAM | 4 GB, 6 GB, 8 GB, 10 GB, 12 GB, 16 GB |
-| Uso recomendado | Casual, 1080p Gaming, 1440p Gaming, 4K Gaming, Diseño 3D |
-
-### Implementación de filtros multi-select
-
-Los filtros utilizan un sistema de selección múltiple basado en chips (badge buttons). Al seleccionar un chip:
-
-1. Se agrega el valor al array de filtros activos para esa categoría.
-2. El array de productos se filtra en tiempo real.
-3. Al deseleccionar, se elimina del array.
-4. Al cambiar de categoría, se limpian los filtros activos.
+Todas las llamadas pasan por `apiClient()`:
+- Agrega automáticamente el header `Authorization: Bearer <token>`
+- Maneja errores HTTP y los convierte en excepciones con el mensaje del backend
+- Construye query strings desde objetos de parámetros
 
 ```typescript
-// Ejemplo simplificado de lógica de filtrado
-const filteredProducts = products.filter(product => {
-  if (activeCategory !== "Todos" && product.category !== activeCategory) return false;
-  if (searchQuery && !product.name.includes(searchQuery) && !product.code.includes(searchQuery)) return false;
-  // Para cada grupo de filtros activo, verificar que el producto coincida
-  return activeFilters.every(filter => productMatchesFilter(product, filter));
-});
+// Uso interno en los archivos de API
+const data = await apiClient<Product[]>('/api/products', {
+  method: 'GET',
+  params: { categoryId: 1, isActive: true }
+})
+```
+
+### Archivos de API disponibles
+
+| Archivo | Endpoints cubiertos |
+|---|---|
+| `authApi.ts` | `POST /api/auth/login` |
+| `productsApi.ts` | `GET/POST/PUT/DELETE /api/products`, `GET /api/categories`, `PATCH /api/products/:id/stock` |
+| `customersApi.ts` | `GET/POST/PUT/DELETE /api/customers` |
+| `salesApi.ts` | `GET/POST /api/sales` |
+| `inventoryApi.ts` | ⚠️ Stubs — endpoints pendientes de confirmar |
+
+### `inventoryApi.ts` — Estado actual
+
+Las funciones están implementadas como **stubs** que simulan la respuesta del backend. Cuando el backend confirme los endpoints, solo hay que:
+
+1. Descomentar la línea `import { apiClient } from './client'`
+2. Reemplazar el stub por la llamada real
+3. Borrar el `console.warn`
+
+```typescript
+// ANTES (stub):
+export async function receiveInstances(payload) {
+  console.warn('[inventoryApi] stub')
+  return { created: payload.serialNumbers.length, skipped: 0, instances: [...] }
+}
+
+// DESPUÉS (conectado):
+export async function receiveInstances(payload) {
+  return apiClient('/api/inventory/receive', { method: 'POST', body: payload })
+}
+```
+
+**Endpoints propuestos** (pendiente confirmación con backend):
+
+| Función | Método | Ruta propuesta |
+|---|---|---|
+| `receiveInstances()` | POST | `/api/inventory/receive` |
+| `getInstanceBySN()` | GET | `/api/inventory/instances/by-sn/:sn` |
+| `getInstances()` | GET | `/api/inventory/instances` |
+| `updateInstanceStatus()` | PATCH | `/api/inventory/instances/:id/status` |
+| `validateSNForSale()` | GET | `/api/inventory/instances/validate/:sn` |
+| `markInstanceAsSold()` | PATCH | `/api/inventory/instances/:id/sell` |
+
+---
+
+## Capa de Hooks
+
+Los hooks encapsulan el estado y la lógica. Los componentes solo los consumen.
+
+### `useProducts(params?)`
+```typescript
+const { products, categories, loading, error, create, update, remove } = useProducts()
+```
+
+### `useCustomers(params?)`
+```typescript
+const { customers, loading, error, create, update } = useCustomers()
+```
+
+### `useSales(params?)`
+```typescript
+const { sales, loading, error, createSale } = useSales()
+```
+
+### `useInventory()`
+```typescript
+const {
+  instances, loading, error,
+  receive,          // recepción masiva de SNs
+  findBySN,         // buscar unidad por SN
+  fetchInstances,   // listar con filtros
+  changeStatus,     // cambiar estado de una unidad
+  validateForSale,  // validar SN en el POS
+  sellInstance,     // marcar como vendido
+} = useInventory()
 ```
 
 ---
 
-## 📦 Capa de Datos — `mockData.ts`
+## Módulo de Inventario Serializado
 
-`src/data/mockData.ts` centraliza toda la lógica de persistencia y provee datos de ejemplo iniciales.
+### ¿Por qué serialización?
 
-### Funciones genéricas
+| Sin serialización | Con serialización |
+|---|---|
+| "Tienes 10 laptops" | "Tienes las laptops SN-001 al SN-010" |
+| Cliente reclama → "¿cuál de las 10?" | Escaneas SN → ves todo el historial |
+| Garantía por ticket (se pierde) | El sistema la calcula automáticamente |
+| Recall del fabricante → no sabes a quién contactar | Lista automática de clientes afectados |
 
-```typescript
-// Carga desde localStorage con fallback a valores por defecto
-function loadFromStorage<T>(key: string, defaults: T[]): T[]
+### Flujo completo
 
-// Guarda en localStorage (serializa a JSON)
-function saveToStorage<T>(key: string, data: T[]): void
+```
+[ALMACÉN - RECEPCIÓN]
+Pistola escanea SN → Enter por cada unidad
+→ receiveInstances() → backend crea ProductInstance con status: DISPONIBLE
+→ adjustStock() → incrementa stockCurrent del producto
+
+[POS - VENTA]
+Cajero escanea UPC del producto
+→ Si requiere SN: modal pide escanear el SN de la unidad física
+→ validateSNForSale() → verifica que esté DISPONIBLE
+→ Al confirmar venta: markInstanceAsSold() → status: VENDIDO
+
+[POSTVENTA - GARANTÍA]
+Cliente trae el producto
+→ Escanear SN → changeStatus(id, 'GARANTIA', detalle, operario)
+→ Historial registra el evento con fecha y responsable
+
+[SERVICIO TÉCNICO]
+→ changeStatus(id, 'REPARACION', ...)
+→ Al devolver: changeStatus(id, 'DISPONIBLE', ...)
 ```
 
-### Funciones específicas
+### Estados y transiciones
 
-```typescript
-// Usuarios
-function addUser(user: User): void
-// Busca venderapp_users, agrega el nuevo usuario, persiste
-
-// Clientes
-function addClient(client: Client): void
-// Busca venderapp_clients, agrega el nuevo cliente, persiste
-
-// Productos
-function addProduct(product: Product): void
-// Agrega producto nuevo al catálogo
-
-function updateProduct(updated: Product): void
-// Encuentra el producto por `id`, reemplaza el objeto completo, persiste
 ```
-
-### Lista de categorías
-
-```typescript
-export const categories: string[] = [
-  "Todos los Productos",
-  "Monitores",
-  "Case",
-  "PC Completa",
-  "Disco SSD",
-  "Estabilizador",
-  "Fuente de Poder",
-  "Memoria RAM",
-  "Periféricos",
-  "Placa Madre",
-  "Tarjetas de Video"
-];
+DISPONIBLE ──venta──▶ VENDIDO
+VENDIDO ──reclamo──▶ GARANTIA
+GARANTIA ──técnico──▶ REPARACION
+REPARACION ──reparado──▶ DISPONIBLE
+REPARACION ──irreparable──▶ OBSOLETO
+VENDIDO ──devolución──▶ DEVUELTO
+DEVUELTO ──revisión──▶ DISPONIBLE | OBSOLETO
 ```
-
-### Datos de ejemplo (seed data)
-
-`mockData.ts` incluye un conjunto de productos de ejemplo que se cargan la primera vez que se ejecuta la aplicación (cuando `localStorage` está vacío). Esto permite demostrar las funcionalidades del sistema inmediatamente.
 
 ---
 
-## ⚙️ Instalación y Configuración
+## Sistema de Filtros Técnicos
 
-### Requisitos previos
+Definido en `src/data/filterConfig.ts` (datos estáticos, no requieren backend).
 
-| Herramienta | Versión mínima |
-|-------------|---------------|
-| Node.js | 18.x o superior |
-| npm | 9.x o superior |
-| Navegador moderno | Chrome 90+, Firefox 88+, Edge 90+ |
+Cada categoría tiene:
+- **`CAT_META`**: ícono, color de acento, descripción
+- **`TECH_FILTERS`**: campos técnicos con opciones como chips
+- **`BRANDS`**: marcas disponibles
 
-### Pasos de instalación
+| Categoría | Filtros técnicos |
+|---|---|
+| Monitores | Tamaño, Resolución, Tasa de refresco |
+| Disco SSD | Capacidad, Tipo (SATA/NVMe), Formato |
+| Memoria RAM | Capacidad, Tipo (DDR4/DDR5), Frecuencia |
+| Placa Madre | Socket, Chipset, Factor de forma |
+| Tarjetas de Video | VRAM, GPU (NVIDIA/AMD), Conector PCIe |
+| Fuente de Poder | Potencia, Certificación 80+ |
+| Periféricos | Tipo de conexión |
 
-**1. Clonar el repositorio**
+---
+
+## Instalación
 
 ```bash
 git clone https://github.com/EliasG0nzales/facturacion-frontend.git
 cd facturacion-frontend
-```
-
-**2. Instalar dependencias**
-
-```bash
 npm install
-```
-
-**3. Iniciar el servidor de desarrollo**
-
-```bash
 npm run dev
 ```
 
-El servidor estará disponible en `http://localhost:5173` (puerto por defecto de Vite).
+---
 
-**4. Compilar para producción**
+## Variables de Entorno
 
-```bash
-npm run build
+Crear un archivo `.env` en la raíz:
+
+```env
+VITE_API_URL=http://localhost:3000
 ```
 
-Los archivos compilados se generarán en el directorio `dist/`.
-
-**5. Vista previa de la build de producción**
-
-```bash
-npm run preview
-```
-
-### Scripts disponibles
-
-| Script | Descripción |
-|--------|-------------|
-| `npm run dev` | Servidor de desarrollo con HMR |
-| `npm run build` | Compilación optimizada para producción |
-| `npm run preview` | Servidor local de la build de producción |
-| `npm run lint` | Análisis estático con ESLint |
-| `npm run type-check` | Verificación de tipos TypeScript sin compilar |
+Si no se define, el cliente HTTP usa `http://localhost:3000` por defecto.
 
 ---
 
-## 🔑 Uso y Credenciales Demo
+## Estado del Proyecto
 
-### Acceso con cuenta demo
+### ✅ Completado
 
-Al iniciar la aplicación por primera vez, se puede usar la cuenta de demostración pre-cargada:
+- [x] Autenticación con JWT y contexto global
+- [x] Dashboard con 4 módulos navegables
+- [x] Módulo POS: búsqueda, filtros técnicos, carrito, modal de detalle
+- [x] Búsqueda por código de barras (pistola lectora)
+- [x] Gestión de productos con imágenes y galería
+- [x] Gestión de clientes con ranking
+- [x] Historial de ventas
+- [x] Esqueleto completo del módulo de inventario serializado
+- [x] Tipos TypeScript para serialización (`inventory.ts`)
+- [x] Hook `useInventory` con todas las operaciones
+- [x] Stubs en `inventoryApi.ts` listos para conectar al backend
 
-| Campo | Valor |
-|-------|-------|
-| 📧 Email | `user@demo.com` |
-| 🔒 Contraseña | `123456` |
+### ⏳ Pendiente de backend
 
-### Primeros pasos
-
-1. **Iniciar sesión** con las credenciales demo o crear una cuenta nueva.
-2. Ir a **📦 Productos** → Registrar algunos productos con imágenes y datos.
-3. Ir a **🏷️ Vender** → Buscar productos, aplicar filtros, agregar al carrito.
-4. **Confirmar la venta** para descontar stock automáticamente.
-5. Ir a **👤 Clientes** → Ver el listado y el ranking de clientes más activos.
-
-### Limpiar datos de prueba
-
-Para resetear completamente la aplicación a su estado inicial, ejecutar en la consola del navegador:
-
-```javascript
-localStorage.removeItem('venderapp_users');
-localStorage.removeItem('venderapp_clients');
-localStorage.removeItem('venderapp_products');
-localStorage.removeItem('venderapp_session');
-location.reload();
-```
+- [ ] Confirmar endpoints del módulo de inventario serializado
+- [ ] Conectar `inventoryApi.ts` (descomentar `apiClient` y borrar stubs)
+- [ ] Cálculo automático de garantía (`warrantyExpiresAt`)
+- [ ] Validación de SN en el POS en tiempo real
 
 ---
 
-## 📸 Capturas de Pantalla
+## Roadmap
 
-> 📌 *Las capturas de pantalla se agregarán en la próxima actualización.*
-
-| Vista | Descripción |
-|-------|-------------|
-| ![Login](#) | Pantalla de inicio de sesión |
-| ![Dashboard - Vender](#) | Módulo POS con tarjetas 3D y carrito |
-| ![Filtros técnicos](#) | Panel de filtros desplegado con chips de selección |
-| ![Carrito con ítems](#) | Panel lateral del carrito con productos agregados |
-| ![Modal de producto](#) | Detalle de producto con carrusel de imágenes |
-| ![Gestión de productos](#) | Formulario de alta y tabla de inventario |
-| ![Clientes](#) | Lista de clientes y ranking de más activos |
+- **v1.1** — Conectar módulo de inventario al backend cuando los endpoints estén listos
+- **v1.2** — Alertas de stock mínimo y recall por rango de SN
+- **v1.3** — Impresión de tickets de venta con SN incluido
+- **v1.4** — Reportes: ventas por período, productos más vendidos, stock crítico
+- **v2.0** — Roles de usuario (ADMIN / VENDEDOR) con permisos diferenciados
 
 ---
 
-## ✅ Checklist de Funcionalidades
+## Colaboradores
 
-### Autenticación
-
-- [x] Login con email y contraseña
-- [x] Persistencia de sesión (recarga de página)
-- [x] Registro de nuevo usuario
-- [x] Creación automática de cliente al registrarse
-- [x] Cierre de sesión
-- [x] Simulación de recuperación de contraseña
-- [ ] Hash de contraseñas (pendiente migración a backend)
-- [ ] Roles de usuario (admin / vendedor / solo lectura)
-
-### Módulo POS (VenderView)
-
-- [x] Búsqueda por nombre de producto
-- [x] Búsqueda por código de barras (Enter para agregar)
-- [x] Filtro por categoría con ícono SVG personalizado
-- [x] Filtros técnicos por categoría con chips multi-select
-- [x] Tarjetas de producto con flip 3D animado
-- [x] Borde animado en cara trasera de la tarjeta
-- [x] Modal de detalle con carrusel de imágenes y thumbnails
-- [x] Carrito lateral deslizante
-- [x] Estado vacío del carrito con ilustración SVG
-- [x] Controles de cantidad en el carrito (− / +)
-- [x] Cálculo automático de subtotal y total
-- [x] Confirmación de venta con descuento de stock
-- [x] Vaciado completo del carrito
-- [ ] Historial de ventas con transacciones
-- [ ] Integración con lector de código de barras HID real
-- [ ] Impresión de ticket/recibo en PDF
-
-### Gestión de Productos (ProductosView)
-
-- [x] Formulario de alta de producto en 3 columnas
-- [x] Carga de imagen principal vía FileReader (base64)
-- [x] Galería de hasta 4 imágenes adicionales
-- [x] Todos los campos: nombre, marca, modelo, precio, costo, stock, etc.
-- [x] Selector de categoría y etiqueta
-- [x] Checkbox de producto destacado
-- [x] Tabla de inventario con todas las columnas
-- [x] Badge de estado de stock dinámico
-- [x] Edición en línea (carga en formulario + resaltado de fila)
-- [x] Eliminación de producto
-- [x] Persistencia inmediata en localStorage
-- [ ] Alertas cuando el stock baje del mínimo
-- [ ] Exportar catálogo a Excel/CSV
-- [ ] Importación masiva de productos
-
-### Gestión de Clientes (ClientesView)
-
-- [x] Lista de clientes con información resumida
-- [x] Búsqueda por nombre en tiempo real
-- [x] Modal para agregar cliente manualmente
-- [x] Registro automático desde la pantalla de registro
-- [x] Ranking "Clientes Más Activos" (top 3 por totalSpent)
-- [x] Badges de fidelidad
-- [ ] Historial detallado de compras por cliente
-- [ ] Edición de datos de cliente
-- [ ] Eliminación de cliente
-
-### Infraestructura y datos
-
-- [x] Persistencia completa en localStorage
-- [x] Tipado estático con TypeScript en todos los componentes
-- [x] Cero dependencias de UI externas
-- [x] Datos de ejemplo (seed data) precargados
-- [x] Filtros técnicos configurables en archivo separado
-- [ ] Migración a API REST + PostgreSQL
-- [ ] Tests unitarios (Jest + React Testing Library)
-- [ ] Tests E2E (Playwright o Cypress)
-- [ ] PWA con modo offline
+| Usuario | Rol |
+|---|---|
+| [@EliasG0nzales](https://github.com/EliasG0nzales) | Frontend — UI, POS, Inventario |
 
 ---
 
-## 🗺️ Roadmap
-
-### Versión 1.1 — Ventas y Reportes *(Prioridad Alta)*
-
-- [ ] **Historial de ventas**: registrar cada transacción con timestamp, productos, total y cliente.
-- [ ] **Reportes básicos**: gráficas de ventas por período (semana / mes).
-- [ ] **Top productos vendidos**: ranking por unidades vendidas.
-- [ ] **Alertas de stock crítico**: notificación visual cuando un producto llega al mínimo.
-
-### Versión 1.2 — Mejoras UX *(Prioridad Media)*
-
-- [ ] **Modo oscuro / claro** con toggle.
-- [ ] **Impresión de ticket**: generar PDF del comprobante de venta.
-- [ ] **Exportar datos**: catálogo y clientes a Excel/CSV.
-- [ ] **Búsqueda avanzada** con múltiples campos simultáneos.
-
-### Versión 2.0 — Backend y Multi-usuario *(Prioridad Alta)*
-
-- [ ] **API REST** con Node.js/Express o FastAPI.
-- [ ] **Base de datos PostgreSQL** para persistencia real.
-- [ ] **Autenticación JWT** con tokens seguros.
-- [ ] **Roles de usuario**: Administrador, Vendedor, Solo lectura.
-- [ ] **Multi-sucursal**: gestionar inventario por sede.
-
-### Versión 2.1 — Integraciones *(Prioridad Baja)*
-
-- [ ] **Integración con lector HID**: soporte real para scanner de código de barras USB/Bluetooth.
-- [ ] **Integración con impresora térmica**: impresión directa de tickets.
-- [ ] **PWA offline**: funcionar sin conexión con sincronización posterior.
-- [ ] **Notificaciones push**: alertas de stock, ventas importantes.
-
-### Versión 3.0 — Escala empresarial *(Futuro)*
-
-- [ ] **Dashboard analítico** con gráficas avanzadas (ventas, márgenes, tendencias).
-- [ ] **CRM completo**: historial de interacciones, notas, seguimiento de cotizaciones.
-- [ ] **Gestión de compras / órdenes a proveedor**.
-- [ ] **Facturación electrónica** (integración con SUNAT u organismos locales).
-- [ ] **App móvil** (React Native o PWA).
-
----
-
-## 🤝 Guía de Contribución
-
-¡Las contribuciones son bienvenidas! Sigue estos pasos para contribuir al proyecto:
-
-### Flujo de trabajo
-
-```bash
-# 1. Hacer fork del repositorio en GitHub
-
-# 2. Clonar tu fork
-git clone https://github.com/TU_USUARIO/facturacion-frontend.git
-cd facturacion-frontend
-
-# 3. Crear una rama para tu feature o corrección
-git checkout -b feat/nombre-del-feature
-# o para correcciones:
-git checkout -b fix/descripcion-del-bug
-
-# 4. Hacer tus cambios
-# ...
-
-# 5. Verificar el tipado
-npm run type-check
-
-# 6. Ejecutar el linter
-npm run lint
-
-# 7. Commit con mensaje descriptivo (Conventional Commits)
-git add .
-git commit -m "feat: agregar historial de ventas con filtro por fecha"
-
-# 8. Push a tu fork
-git push origin feat/nombre-del-feature
-
-# 9. Abrir un Pull Request en GitHub
-```
-
-### Convenciones de commits
-
-Seguimos el estándar [Conventional Commits](https://www.conventionalcommits.org/):
-
-| Prefijo | Uso |
-|---------|-----|
-| `feat:` | Nueva funcionalidad |
-| `fix:` | Corrección de bug |
-| `docs:` | Cambios en documentación |
-| `style:` | Cambios de formato/estilo (sin lógica) |
-| `refactor:` | Refactoring sin cambio de funcionalidad |
-| `test:` | Agregar o modificar tests |
-| `chore:` | Tareas de mantenimiento |
-
-### Estándares de código
-
-- **TypeScript estricto**: todos los componentes y funciones deben estar tipados.
-- **Componentes funcionales**: usar React hooks, evitar componentes de clase.
-- **CSS puro**: no agregar librerías de UI (TailwindCSS, MUI, etc.) sin discusión previa.
-- **Nombres en español**: las variables de dominio de negocio pueden ir en español para consistencia.
-- **localStorage centralizado**: no acceder a `localStorage` directamente desde los componentes — usar las funciones de `mockData.ts`.
-
-### Reportar bugs
-
-Usa el [issue tracker de GitHub](https://github.com/EliasG0nzales/facturacion-frontend/issues) con la plantilla de bug report, incluyendo:
-
-1. Pasos para reproducir.
-2. Comportamiento esperado.
-3. Comportamiento actual.
-4. Screenshots si aplica.
-5. Navegador y versión.
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la **Licencia MIT**.
-
-```
-MIT License
-
-Copyright (c) 2025 Elias Gonzales
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
----
-
-<div align="center">
-
-Hecho con ❤️ por [Elias Gonzales](https://github.com/EliasG0nzales)
-
-⭐ Si este proyecto te fue útil, considera darle una estrella en GitHub
-
-[![GitHub stars](https://img.shields.io/github/stars/EliasG0nzales/facturacion-frontend?style=social)](https://github.com/EliasG0nzales/facturacion-frontend/stargazers)
-
-</div>
+*Proyecto en desarrollo activo — 2026*
