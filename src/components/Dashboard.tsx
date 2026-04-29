@@ -5,6 +5,7 @@ import Sidebar from './dashboard/Sidebar'
 import VenderView from './dashboard/VenderView'
 import ProductosView from './dashboard/ProductosView'
 import ClientesView from './dashboard/ClientesView'
+import InventarioView from './dashboard/InventarioView'
 
 interface Props {
   user: User
@@ -16,9 +17,10 @@ export default function Dashboard({ user, onLogout }: Props) {
 
   const renderView = () => {
     switch (activeView) {
-      case 'vender': return <VenderView />
-      case 'productos': return <ProductosView />
-      case 'clientes': return <ClientesView />
+      case 'vender':     return <VenderView />
+      case 'productos':  return <ProductosView />
+      case 'inventario': return <InventarioView />
+      case 'clientes':   return <ClientesView />
     }
   }
 

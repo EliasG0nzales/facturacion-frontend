@@ -5,4 +5,4 @@ export * from './sale'
 export * from './notification'
 export * from './pagination'
 
-export type DashboardView = 'vender' | 'productos' | 'clientes'
+export type DashboardView = 'vender' | 'productos' | 'clientes' | 'inventario'

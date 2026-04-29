@@ -10,9 +10,10 @@ interface Props {
 
 export default function Sidebar({ user, activeView, onChangeView, onLogout }: Props) {
   const navItems: { view: DashboardView; label: string; icon: string }[] = [
-    { view: 'vender', label: 'Vender', icon: '🏷️' },
-    { view: 'productos', label: 'Productos', icon: '📦' },
-    { view: 'clientes', label: 'Clientes', icon: '👤' },
+    { view: 'vender',     label: 'Vender',     icon: '🏷️' },
+    { view: 'productos',  label: 'Productos',  icon: '📦' },
+    { view: 'inventario', label: 'Inventario', icon: '🔢' },
+    { view: 'clientes',   label: 'Clientes',   icon: '👤' },
   ]
 
   return (
