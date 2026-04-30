@@ -265,6 +265,7 @@ export default function ProductosView() {
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
 
+        <div className="pv-table-scroll">
         <table className="prod-table">
           <thead>
             <tr>
@@ -307,6 +308,7 @@ export default function ProductosView() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )
