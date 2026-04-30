@@ -404,7 +404,11 @@ export default function VenderView() {
             const allImgs = [p.coverImageUrl, ...(p.gallery ?? [])].filter(Boolean) as string[]
             return (
               <div key={p.id} className="sell-card">
-                <div className="sell-card-inner">
+                <div
+                  className="sell-card-inner"
+                  onClick={() => addToCart(p)}
+                  style={{ cursor: p.stockCurrent === 0 ? 'not-allowed' : 'pointer' }}
+                >
                   {/* BACK */}
                   <div className="sell-card-back">
                     <div className="sell-card-back-content">
@@ -458,7 +462,7 @@ export default function VenderView() {
                         {p.sku && <p className="sell-card-brand">SKU: {p.sku}</p>}
                         <div className="sell-card-action">
                           {inCart ? (
-                            <div className="sell-qty-ctrl">
+                            <div className="sell-qty-ctrl" onClick={e => e.stopPropagation()}>
                               <button onClick={() => updateQty(p.id, inCart.qty - 1)}>−</button>
                               <span>{inCart.qty}</span>
                               <button onClick={() => updateQty(p.id, inCart.qty + 1)}>+</button>
@@ -466,7 +470,7 @@ export default function VenderView() {
                           ) : (
                             <button
                               className="sell-card-add-btn"
-                              onClick={() => addToCart(p)}
+                              onClick={e => { e.stopPropagation(); addToCart(p) }}
                               disabled={p.stockCurrent === 0}
                             >
                               {p.stockCurrent === 0 ? 'Sin stock' : '+ Agregar'}
