@@ -1,18 +1,21 @@
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+html, body {
+  height: 100%;
+  overflow: hidden;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   background: #f0f0f0;
   color: #333;
-  min-height: 100vh;
 }
 
 #root {
   width: 100%;
+  height: 100%;
   max-width: 100%;
   border: none;
   text-align: left;
+  overflow: hidden;
 }
 
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
@@ -154,6 +157,7 @@ input, select { font-family: inherit; }
 .dashboard {
   display: flex;
   height: 100vh;
+  width: 100%;
   overflow: hidden;
   background: #ebebeb;
 }
