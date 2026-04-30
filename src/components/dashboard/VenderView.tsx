@@ -203,6 +203,26 @@ export default function VenderView() {
     setShowCart(true)
   }
 
+  // Pistola de escaneo: escribe el SKU y presiona Enter automáticamente
+  const handleScan = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    const code = search.trim()
+    if (!code) return
+    const product = products.find(
+      p => p.sku?.toLowerCase() === code.toLowerCase() ||
+           p.name.toLowerCase() === code.toLowerCase()
+    )
+    if (product) {
+      addToCart(product)
+      setSearch('')
+    } else {
+      // Feedback visual: borde rojo breve
+      const input = e.currentTarget
+      input.classList.add('scan-not-found')
+      setTimeout(() => input.classList.remove('scan-not-found'), 600)
+    }
+  }
+
   const removeFromCart = (id: number) =>
     setCart(prev => prev.filter(i => i.product.id !== id))
 
@@ -273,9 +293,10 @@ export default function VenderView() {
         <input
           className="vender-search"
           type="text"
-          placeholder="Buscar producto o SKU..."
+          placeholder="Buscar producto o escanea SKU..."
           value={search}
           onChange={e => setSearch(e.target.value)}
+          onKeyDown={handleScan}
         />
 
         {/* Dropdown categorías */}
