@@ -162,6 +162,7 @@ input, select { font-family: inherit; }
   flex: 1;
   overflow-y: auto;
   height: 100vh;
+  margin-left: 170px;
 }
 
 /* ===== SIDEBAR ===== */
@@ -173,10 +174,12 @@ input, select { font-family: inherit; }
   display: flex;
   flex-direction: column;
   padding: 1.5rem 0 1rem;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
   overflow: hidden;
+  z-index: 100;
 }
 
 .sidebar-user {
