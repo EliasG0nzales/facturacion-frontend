@@ -200,6 +200,7 @@ export default function VenderView() {
       }
       return [...prev, { product, qty: 1 }]
     })
+    setShowCart(true)
   }
 
   const removeFromCart = (id: number) =>
