@@ -483,20 +483,12 @@ export default function VenderView() {
                         </p>
                         {p.sku && <p className="sell-card-brand">SKU: {p.sku}</p>}
                         <div className="sell-card-action">
-                          {inCart ? (
+                          {inCart && (
                             <div className="sell-qty-ctrl" onClick={e => e.stopPropagation()}>
                               <button onClick={() => updateQty(p.id, inCart.qty - 1)}>−</button>
                               <span>{inCart.qty}</span>
                               <button onClick={() => updateQty(p.id, inCart.qty + 1)}>+</button>
                             </div>
-                          ) : (
-                            <button
-                              className="sell-card-add-btn"
-                              onClick={e => { e.stopPropagation(); addToCart(p) }}
-                              disabled={p.stockCurrent === 0}
-                            >
-                              {p.stockCurrent === 0 ? 'Sin stock' : '+ Agregar'}
-                            </button>
                           )}
                         </div>
                       </div>

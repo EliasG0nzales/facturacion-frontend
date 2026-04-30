@@ -1761,13 +1761,7 @@ input, select { font-family: inherit; }
 }
 
 .sell-card-back::before {
-  position: absolute;
-  content: '';
-  display: block;
-  width: 160px;
-  height: 160%;
-  background: linear-gradient(90deg, transparent, #ff8080, #ff4d4d, #ff8080, #ffaaaa, transparent);
-  animation: sc_rotation 5000ms infinite linear;
+  display: none;
 }
 
 @keyframes sc_rotation {
