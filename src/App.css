@@ -153,8 +153,15 @@ input, select { font-family: inherit; }
 /* ===== DASHBOARD ===== */
 .dashboard {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: #ebebeb;
+}
+
+.dashboard-main {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
 }
 
 /* ===== SIDEBAR ===== */
@@ -166,6 +173,10 @@ input, select { font-family: inherit; }
   display: flex;
   flex-direction: column;
   padding: 1.5rem 0 1rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar-user {
